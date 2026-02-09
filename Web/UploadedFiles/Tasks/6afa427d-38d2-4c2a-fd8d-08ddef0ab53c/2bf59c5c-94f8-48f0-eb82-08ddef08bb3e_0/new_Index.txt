@@ -1,0 +1,2660 @@
+@{
+    ViewBag.Title = "Report Center";
+    Layout = "~/Views/Shared/_AdminLteLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row" style="display:none">
+        <div class="row">
+            <div class="col-lg-12">
+                <ol class="breadcrumb">
+                    <li><a id="liDashBoardUrl" href="#">Dashboard</a></li>
+                    <li class="active"> List</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12" style="padding-left:0px;">
+            <div class="panel panel-default">
+                <div class="panel-topheading">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-6">Report Center</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <hr />
+                    <div class="tab-content">
+                        <div id="tabReportCenter" class="tab-pane fade in active">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Department</label>
+                                            <select id="ddl_Department" class="form-control">
+                                                <option value="">Select Department</option>
+                                                @foreach (var dept in ViewBag.ddl_Department)
+                                                {
+                                                    <option value="@dept.DepartmentId" data-code="@dept.ShortName">@dept.DepartmentName</option>
+                                                }
+                                            </select>
+
+                                        </div>
+                                    </div>
+
+                                    <div id="finReportFilters" style="display:none">
+
+                                        <div class="col-md-3">
+                                            <label class="req"> From Date</label>
+                                            <div class='form-group'>
+                                                @Html.TextBox("findpkFromDate", null, new { id = "findpkFromDate", @class = "form-control date" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>To Date</label>
+                                            <div class='from-group'>
+                                                @Html.TextBox("findpkToDate", null, new { id = "findpkToDate", @class = "form-control date" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="pmyReportFilters" style="display:none">
+
+                                        <div class="col-md-3">
+                                            <label class="req"> From Date</label>
+                                            <div class='form-group'>
+                                                @Html.TextBox("pmydpkFromDate", null, new { id = "pmydpkFromDate", @class = "form-control date" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>To Date</label>
+                                            <div class='from-group'>
+                                                @Html.TextBox("pmydpkToDate", null, new { id = "pmydpkToDate", @class = "form-control date" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="clnReportFilters" style="display:none">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>User</label>
+                                                @Html.DropDownList("ddl_User", new SelectList(ViewBag.ddl_User, "UserId", "UserName"), "Select User", new { id = "ddl_User", @class = "form-control" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>OPD / Doctor</label>
+                                                @Html.DropDownList("ddl_DepartmentComponent", new SelectList(ViewBag.ddl_DepartmentComponent, "DepartmentComponentId", "ComponentName", ""), "Select OPD / Doctor", new { id = "ddl_DepartmentComponent", @class = "form-control", })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="req"> From Date</label>
+                                            <div class='form-group'>
+                                                @Html.TextBox("clndpkFromDate", null, new { id = "clndpkFromDate", @class = "form-control date" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>To Date</label>
+                                            <div class='from-group'>
+                                                @Html.TextBox("clndpkToDate", null, new { id = "clndpkToDate", @class = "form-control date" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="labReportFilters" style="display:none">
+                                        <div class="col-md-5">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>User</label>
+                                                    @if (ViewBag.DefaultUser != null)
+                                                    {
+                                                        @Html.DropDownList("ddl_labUser", new SelectList(ViewBag.ddl_labUser, "UserId", "UserName"), new { id = "ddl_labUser", @class = "form-control" })
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.DropDownList("ddl_labUser", new SelectList(ViewBag.ddl_labUser, "UserId", "UserName"), "Select User", new { id = "ddl_labUser", @class = "form-control" })
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="req"> From Date</label>
+                                                <div class='form-group'>
+                                                    @Html.TextBox("labdpkFromDate", null, new { id = "labdpkFromDate", @class = "form-control date" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>To Date</label>
+                                                <div class='from-group'>
+                                                    @Html.TextBox("labdpkToDate", null, new { id = "labdpkToDate", @class = "form-control date" })
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label>Deparment</label>
+                                                    @Html.DropDownList("ddl_labDepartment", new SelectList(ViewBag.ddl_labDepartment, "DepartmentId", "DepartmentName", ""), "ALL", new { @id = "ddl_labDepartment", @class = "form-control", @onchange = "GetSectionsByDepId(this.value);return false;" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="table-responsive" style="background-color:white">
+                                                    <div id="dvData">
+                                                        <table id="tblSection" class="table table-striped table-bordered table-responsive table-condensed table-hover" style="width: 100%; max-width: 110%; ">
+                                                            <thead>
+                                                                <tr class="noExl" id="trHeader">
+                                                                    <th>Sr#</th>
+                                                                    <th>Section</th>
+                                                                    <th><input type="checkbox" id="All" class="checkbox" onchange="SelectAll(this.checked);" /></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (ViewBag.lablstSection != null)
+                                                                {
+                                                                    foreach (var item in ViewBag.lablstSection)
+                                                                    {
+                                                                        <tr>
+                                                                            <td style="width:5%;">@item.SectionId</td>
+                                                                            <td style="width:90%;">@item.SectionName</td>
+                                                                            <td style="width:5%;"><input type="checkbox" class="checkbox all" onchange="SetlabSection(this.checked,@item.SectionId);" /></td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            </tbody>
+                                                            <tfoot>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div id="radReportFilters" style="display:none">
+                                        <div class="col-md-5">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>User</label>
+                                                    @if (ViewBag.DefaultUser != null)
+                                                    {
+                                                        @Html.DropDownList("ddl_radUser", new SelectList(ViewBag.ddl_radUser, "UserId", "UserName"), new { id = "ddl_radUser", @class = "form-control" })
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.DropDownList("ddl_radUser", new SelectList(ViewBag.ddl_radUser, "UserId", "UserName"), "Select User", new { id = "ddl_radUser", @class = "form-control" })
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="req"> From Date</label>
+                                                <div class='form-group'>
+                                                    @Html.TextBox("raddpkFromDate", null, new { id = "raddpkFromDate", @class = "form-control date" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>To Date</label>
+                                                <div class='from-group'>
+                                                    @Html.TextBox("raddpkToDate", null, new { id = "raddpkToDate", @class = "form-control date" })
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label>Deparment</label>
+                                                    @Html.DropDownList("ddl_radDepartment", new SelectList(ViewBag.ddl_radDepartment, "DepartmentId", "DepartmentName", ""), "ALL", new { @id = "ddl_radDepartment", @class = "form-control", @onchange = "GetSectionsByDepId(this.value);return false;" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="table-responsive" style="background-color:white">
+                                                    <div id="dvData">
+                                                        <table id="tblSection" class="table table-striped table-bordered table-responsive table-condensed table-hover" style="width: 100%; max-width: 110%; ">
+                                                            <thead>
+                                                                <tr class="noExl" id="trHeader">
+                                                                    <th>Sr#</th>
+                                                                    <th>Section</th>
+                                                                    <th><input type="checkbox" id="All" class="checkbox" onchange="SelectAll(this.checked);" /></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (ViewBag.radlstSection != null)
+                                                                {
+                                                                    foreach (var item in ViewBag.radlstSection)
+                                                                    {
+                                                                        <tr>
+                                                                            <td style="width:5%;">@item.SectionId</td>
+                                                                            <td style="width:90%;">@item.SectionName</td>
+                                                                            <td style="width:5%;"><input type="checkbox" class="checkbox all" onchange="SetRadSection(this.checked,@item.SectionId);" /></td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            </tbody>
+                                                            <tfoot>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="clnReport" style="display:none">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    Report Type List
+                                </div>
+                                <div class="panel-body">
+                                    <div class="col-md-12">
+                                        <div class="row" @*style="margin-bottom:2%;"*@>
+                                            <div class="table-responsive" style="background-color:white">
+                                                <table id="tblBenifit" class="table table-striped table-bordered table-responsive table-condensed table-hover" @*style="margin-left: 2%;width:96%;"*@>
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:5%;">Sr#</th>
+                                                            <th style="width:85%;">Report Type</th>
+                                                            <th style="width:5%;">Preview</th>
+                                                            @*   <th style="width:5%;">Excel</th>*@
+
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>1</td>
+                                                            <td>Appointment List</td>
+                                                            <td><a onclick="GotoPrint('PrintAppontmentList');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>2</td>
+                                                            <td>Cancelled Appointments List</td>
+                                                            <td><a onclick="GotoPrint('PrintCancelledAppontmentsList');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>3</td>
+                                                            <td>Sales Detail Service Wise</td>
+                                                            <td><a onclick="GotoPrint('PrintOPDSalesDetailServiceWise');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>4</td>
+                                                            <td>Sales Detail</td>
+                                                            <td><a onclick="GotoPrint('PrintOPDSalesDetail');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>5</td>
+                                                            <td>Daily Patient Detail</td>
+                                                            @*<td> <button type="button" class="btn btn-primary" onclick="GotoPrint('DailyPatientDetail');" style="margin-top:11%;"> <span class="glyphicon glyphicon-print"></span></button></td>*@
+                                                            <td><a onclick="GotoPrint('DailyPatientDetail');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>6</td>
+                                                            <td>Daily Clinic Summary</td>
+                                                            @*<td> <button type="button" class="btn btn-primary" onclick="GotoPrint('DailyDepartmentSummary');" style="margin-top:11%;"> <span class="glyphicon glyphicon-print"></span></button></td>*@
+                                                            <td><a onclick="GotoPrint('DailyDepartmentSummary');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+
+                                                        </tr>
+                                                        <!--<tr>
+                                            <td>4</td>
+                                            <td>Monthly Clinic Summary</td>-->
+                                                        @*<td> <button type="button" class="btn btn-primary" onclick="GotoPrint('MonthlyDepartmentSummary');" style="margin-top:11%;"> <span class="glyphicon glyphicon-print"></span></button></td>*@
+                                                        <!--<td><a onclick="GotoPrint('MonthlyDepartmentSummary');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+
+                                            </tr>-->
+
+                                                        <tr>
+                                                            <td>7</td>
+                                                            <td>Daily Patient Clinic Visits</td>
+                                                            @*<td> <button type="button" class="btn btn-primary" onclick="GotoPrint('MonthlyDepartmentSummary');" style="margin-top:11%;"> <span class="glyphicon glyphicon-print"></span></button></td>*@
+                                                            <td><a onclick="GotoPrint('PrintPatientDepartmentVist');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>8</td>
+                                                            <td>Daily Patient Assessment</td>
+                                                            @*<td> <button type="button" class="btn btn-primary" onclick="GotoPrint('MonthlyDepartmentSummary');" style="margin-top:11%;"> <span class="glyphicon glyphicon-print"></span></button></td>*@
+                                                            <td><a onclick="GotoPrint('DailyPatientAssessment');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>9</td>
+                                                            <td>Procedure Costing</td>
+                                                            <td><a onclick="GotoPrint('PrintProcedureCosting');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        </tr>
+
+
+                                                    </tbody>
+
+                                                    <tfoot>
+
+                                                    </tfoot>
+                                                </table>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="padding-left:0px;display:none" id="labReport">
+                    <div class="row">
+                        <div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div>
+                                        <div class="row">
+                                            <div class="col-md-6">Reports</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                                <div class="panel-body">
+                                    <div class="col-md-12">
+                                        <div class="table-responsive" style="background-color:white">
+                                            <div id="dvData">
+                                                <table id="tblOrderCPC" class="table table-striped table-bordered table-responsive table-condensed table-hover" style="width: 100%; max-width: 110%; ">
+                                                    <thead>
+                                                        <tr class="noExl" id="trHeader">
+                                                            <th> Description</th>
+                                                            <th> Preview</th>
+                                                            <th> Excel</th>
+                                                            <th> Viewer</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+                                                        <tr>
+                                                            <td>Sales Detail</td>
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="PrintDailyLabPatientDetail();">Preview</button></td>*@
+                                                            <td><a onclick="PrintDailyLabPatientDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                            <td><a onclick="DownloadingDailyLabPatientDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="DownloadingDailyLabPatientDetail();">Download</button></td>*@
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="ViewDailyLabPatientDetail();">View</button></td>*@
+
+                                                        </tr>
+
+
+
+                                                        <tr>
+                                                            <td>Sales Summary</td>
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="PrintDailyLabSalesSummary();">Preview</button></td>*@
+                                                            <td><a onclick="PrintDailyLabSalesSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                            <td><a onclick="DownloadingDailyLabSalesSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="DownloadingDailyLabPatientDetail();">Download</button></td>*@
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="ViewDailyLabSalesSummary();">View</button></td>*@
+
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Daily Sale Summary</td>
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="PrintDailySaleSummary();">Preview</button></td>*@
+                                                            <td><a onclick="PrintDailySaleSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                            <td><a onclick="DownloadingDailySaleSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="DownloadingDailySaleSummary();">Download</button></td>*@
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="ViewDailySaleSummary();">View</button></td>*@
+
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Sale Order Detail</td>
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="PrintSaleOrderDetail();">Preview</button></td>*@
+                                                            <td><a onclick="PrintSaleOrderDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+
+                                                            @*<td><button type="button" class="btn btn-primary" onclick="DownloadingSaleOrderDetail();">Download</button></td>*@
+                                                            <td><a onclick="DownloadingSaleOrderDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                        </tr>
+
+                                                        <!--<tr>
+                                            <td>Sale Summary (Shift Wise)</td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="PrintDailyLabPatientStatus();">Preview</button></td>*@
+                                                        <!--<td><a onclick="PrintDailyLabPatientStatus();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="DownloadingDailyLabPatientStatus();">Download</button></td>*@
+                                                        <!--<td><a onclick="DownloadingDailyLabPatientStatus();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                            </tr>
+
+                                            <tr>
+                                                <td>Daily Sales Detail (Section Wise)</td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="PrintSalesDetailSectionWise();">Preview</button></td>*@
+                                                        <!--<td><a onclick="PrintSalesDetailSectionWise();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="DownloadingSalesDetailSectionWise();">Download</button></td>*@
+                                                        <!--<td><a onclick="DownloadingSalesDetailSectionWise();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>Daily Sales Summary (Section Wise)</td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="PrintSalesSummary();">Preview</button></td>*@
+                                                        <!--<td><a onclick="PrintSalesSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="DownloadingSalesSummary();">Download</button></td>*@
+                                                        <!--<td><a onclick="DownloadingSalesSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                            </tr>-->
+                                                        @*
+                                                <tr>
+                                                    <td>Daily Sales Summary (Section Wise)</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintSalesSummarySectionWise();">Preview</button></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Test Wise Patient Summary</td>
+                                                    <td><a onclick="PrintTestWisePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingTestWisePatientSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Test Wise Patient Detail</td>
+                                                    <td><a onclick="PrintTestWisePatientDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingTestWisePatientDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+                                                        <!--<tr>
+                                            <td>Coporate Patient Detail</td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="PrintCoperatePatientDetail();">Preview</button></td>*@
+                                                        <!--<td><a onclick="PrintCoperatePatientDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="DownloadingCoperatePatientDetail();">Download</button></td>*@
+                                                        <!--<td><a onclick="DownloadingCoperatePatientDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>Coporate Patient Summary</td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="PrintCoperatePatientSummary();">Preview</button></td>*@
+                                                        <!--<td><a onclick="PrintCoperatePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="DownloadingCoperatePatientSummary();">Download</button></td>*@
+                                                        <!--<td><a onclick="DownloadingCoperatePatientSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                            </tr>-->
+                                                        @*<tr>
+                                                    <td>Radiolgy Share Summary</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintradialogyShareSummary();">Preview</button></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Summary Report</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintLabServiceOrderSummaryReport();">Print</button></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Patient Order Tracking</td>
+                                                    <td><a onclick="PrintPatientOrderTracking();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingPatientOrderTracking();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Credit Sales Detail</td>
+                                                    <td><a onclick="PrintCreditSalesDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingCreditSalesDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+
+                                                        @*<tr>
+                                                    <td>Section Wise Patient Summary</td>
+                                                    <td><a onclick="PrintSectionWisePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingSectionWisePatientSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+
+                                                        @*<tr>
+                                                    <td>Section Wise Strength</td>
+                                                    <td><a onclick="PrintSectionWiseStrength();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingPrintSectionWiseStrength();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+
+                                                        @*<tr>
+                                                    <td>Test Wise Strength</td>
+                                                    <td><a onclick="PrintTestWiseStrength();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingPrintTestWiseStrength();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+
+
+                                                        @*<tr>
+                                                    <td>Collection Point Test Wise Patient Summary</td>
+                                                    <td><a onclick="PrintCPTestWisePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingCPTestWisePatientSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Collection Point Test Wise Patient Detail</td>
+                                                    <td><a onclick="PrintCPTestWisePatientDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingCPTestWisePatientDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Referral wise Summary</td>
+                                                    <td><a onclick="PrintReferalWiseSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadReferalWiseSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Referral wise Patient Detail</td>
+                                                    <td><a onclick="PrintReferalWisePatientDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadReferalWisePatientDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>OPD Requistion Detail</td>
+                                                    <td><a onclick="PrintOPDRequistionDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadOPDRequistionDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>OPD Doctor Wise Requisition Summary</td>
+                                                    <td><a onclick="PrintOPDDoctorWisePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadOPDDoctorWisePatientSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Department Wise Patient Summary</td>
+                                                    <td><a onclick="PrintDepartmentWisePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadOPDDoctorWisePatientSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                </tr>
+                                                <tr>
+                                                    <td>Ward Wise Patient Summary</td>
+                                                    <td><a onclick="PrintWardtWisePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                </tr>*@
+                                                        <!--<tr>
+                                            <td>Sale Report</td>-->
+                                                        @*<td><button type="button" class="btn btn-primary" onclick="PrintSaleOrderDetail();">Preview</button></td>*@
+                                                        <!--<td><a onclick="PrintSaleOrderDetailAll();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                <td></td>
+                                            </tr>-->
+                                                    </tbody>
+                                                    <tfoot>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div style="padding-left:0px;display:none" id="radReport">
+                    <div class="row">
+                        <div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div>
+                                        <div class="row">
+                                            <div class="col-md-6">Reports</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                                <div class="panel-body">
+                                    <div class="col-md-12">
+                                        <div class="table-responsive" style="background-color:white">
+                                            <div id="dvData">
+                                                <table id="tblOrderCPC" class="table table-striped table-bordered table-responsive table-condensed table-hover" style="width: 100%; max-width: 110%; ">
+                                                    <thead>
+                                                        <tr class="noExl" id="trHeader">
+                                                            <th> Description</th>
+                                                            <th> Preview</th>
+                                                            <th> Excel</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+                                                        <tr>
+                                                            <td>Sales Detail</td>
+                                                            <td><a onclick="Print_radDailyLabPatientDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                            <td><a onclick="Downloading_radDailyLabPatientDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Sales Summary</td>
+                                                            <td><a onclick="Print_radDailyLabSalesSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                            <td><a onclick="Downloading_radDailyLabSalesSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Daily Sale Summary</td>
+                                                            <td><a onclick="Print_radDailySaleSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                            <td><a onclick="Downloading_radDailySaleSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Sale Order Detail</td>
+                                                            <td><a onclick="Print_radSaleOrderDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                            <td><a onclick="Downloading_radSaleOrderDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+
+                                                        </tr>
+
+                                                        @*<tr>
+                                                    <td>Credit Sales Detail</td>
+                                                    <td><a onclick="PrintCreditSalesDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingCreditSalesDetail();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+
+                                                        @*<tr>
+                                                   <td>Section Wise Patient Summary</td>
+                                                   <td><a onclick="PrintSectionWisePatientSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                   <td><a onclick="DownloadingSectionWisePatientSummary();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+
+                                                        @*<tr>
+                                                    <td>Section Wise Strength</td>
+                                                    <td><a onclick="PrintSectionWiseStrength();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingPrintSectionWiseStrength();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+
+                                                        @*<tr>
+                                                    <td>Test Wise Strength</td>
+                                                    <td><a onclick="PrintTestWiseStrength();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    <td><a onclick="DownloadingPrintTestWiseStrength();"><img src="/Images/Common/Excel.png" style='width:30px;height:30px;margin-left: 5%;' /></a></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Daily Sales Detail (Section Wise)</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintSalesDetailSectionWise();">Preview</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Daily Sales Summary (Section Wise)</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintSalesSummary();">Preview</button></td>
+                                                </tr>*@
+                                                        @*
+                                                <tr>
+                                                    <td>Daily Sales Summary (Section Wise)</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintSalesSummarySectionWise();">Preview</button></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Test Wise Patient Summary</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintTestWisePatientSummary();">Preview</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Test Wise Patient Detail</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintTestWisePatientDetail();">Preview</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Coperate Patient Detail</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintCoperatePatientDetail();">Preview</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Coperate Patient Summary</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintCoperatePatientSummary();">Preview</button></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Radiolgy Share Summary</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintradialogyShareSummary();">Preview</button></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>Summary Report</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintLabServiceOrderSummaryReport();">Print</button></td>
+                                                </tr>*@
+                                                        @*<tr>
+                                                    <td>PatientOrder Tracking</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintPatientOrderTracking();">Preview</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Referral wise Summary</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintReferalWiseSummary();">Preview</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Referral wise Patient Detail</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintReferalWisePatientDetail();">Preview</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>OPD Requistion Detail</td>
+                                                    <td><button type="button" class="btn btn-primary" onclick="PrintOPDRequistionDetail();">Preview</button></td>
+                                                </tr>*@
+                                                    </tbody>
+                                                    <tfoot>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="panel-footer"></div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="display:none" id="pmyReport">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Report Type List
+                            </div>
+                            <div class="panel-body">
+                                <div class="col-md-12">
+                                    <div class="row" style="margin-bottom:2%;">
+                                        <div class="table-responsive" style="background-color:white">
+                                            <table id="tblBenifit" class="table table-striped table-bordered table-responsive table-condensed table-hover" style="margin-left: 2%;width:96%;">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width:5%;">Sr#</th>
+                                                        <th style="width:90%;"> Sale Order Summary</th>
+                                                        <th style="width:5%;">Preview</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1</td>
+                                                        <td>Sale Order Summary</td>
+                                                        <td><a onclick="Goto_pmyPrint('SaleOrderSummary');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2</td>
+                                                        <td>Sale Order Detail Summary</td>
+                                                        <td><a onclick="Goto_pmyPrint('SaleOrderDetailSummary');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>3</td>
+                                                        <td>Medicine Revenue Summary</td>
+                                                        <td><a onclick="Goto_pmyPrint('MedicineRevenueSummary');"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-footer"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="row" style="display:none" id="finReport">
+                    <div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Report Type List
+                            </div>
+                            <div class="panel-body">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <div class="table-responsive" style="background-color:white;">
+                                            <table id="tblBenifit" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width:80%;">Report Type</th>
+                                                        <th style="width:10%;">Preview</th>
+                                                        <th style="width:10%;">Excel</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr style="display:none">
+                                                        <td>Receipt Detail</td>
+                                                        <td><a onclick="PrintReceiptDetailReport();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        <td><a onclick="DownloadReceiptDetailReport();"><img src="~/Images/Common/excel.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    </tr>
+                                                    <tr style="display:none">
+                                                        <td>Payment Detail</td>
+                                                        <td><a onclick="PrintPaymentDetailReport();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        <td><a onclick="DownloadPaymentDetailReport();"><img src="/Images/Common/excel.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    </tr>
+                                                    <tr style="display:none">
+                                                        <td>Cash Book</td>
+                                                        <td><a onclick="PrintCashBookReport();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        <td><a onclick="DownloadCashBookReport();"><img src="/Images/Common/excel.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    </tr>
+                                                    <tr style="display:none">
+                                                        <td>Expense Summary</td>
+                                                        <td><a onclick="PrintExpenseSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        <td><a onclick="DownloadExpenseSummary();"><img src="/Images/Common/excel.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Revenue Summary</td>
+                                                        <td><a onclick="PrintRevenueSummary();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        <td>@*<a onclick="DownloadExpenseSummary();"><img src="/Images/Common/excel.png" style='width:30px;height:30px;margin-left: 21%;' /></a>*@</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Daily Sales Detail</td>
+                                                        <td><a onclick="PrintDailySalesDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        <td>@*<a onclick="DownloadExpenseSummary();"><img src="/Images/Common/excel.png" style='width:30px;height:30px;margin-left: 21%;' /></a>*@</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Doctor Income Summary</td>
+                                                        <td><a onclick="PrintDoctorIncomeDetail();"><img src="/Images/Common/Printer.png" style='width:30px;height:30px;margin-left: 21%;' /></a></td>
+                                                        <td></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    var allDepartments = [];
+    var arrlabSections = new Array();
+    var arrRadSections = new Array();
+    $(document).ready(function () {
+
+        //$("#dpkFromDate").setValue(new Date().toLocaleDateString());
+        //$("#dpkFromDate").setDateFormat(new Date());
+        //$("#dpkToDate").setValue(new Date().toLocaleDateString());
+        //$("#dpkToDate").setDateFormat(new Date());
+        if ('@ViewBag.ddl_labDepartmentId' != '') {
+            $("#ddl_labDepartment").val('@ViewBag.ddl_labDepartmentId');
+            $("#ddl_labDepartment").attr("disabled", true);
+        }
+        if ('@ViewBag.ddl_radDepartmentId' != '') {
+            $("#ddl_radDepartment").val('@ViewBag.ddl_radDepartmentId');
+            $("#ddl_radDepartment").attr("disabled", true);
+        }
+        $("#ddl_Department").change(function () {
+            var shortName = $("#ddl_Department option:selected").data("code");
+
+            $("#clnReportFilters").hide();
+            $("#clnReport").hide();
+            $("#labReportFilters").hide();
+            $("#labReport").hide();
+            $("#radReportFilters").hide();
+            $("#radReport").hide();
+            $("#pmyReportFilters").hide();
+            $("#pmyReport").hide();
+            $("#finReportFilters").hide();
+            $("#finReport").hide();
+
+            if (shortName === "OPD") {
+                $("#clnReportFilters").show();
+                $("#clnReport").show();
+            }
+            else if (shortName === "PATH") {
+                $("#labReportFilters").show();
+                $("#labReport").show();
+                $("#dpkFromDate").val('__/__/____');
+                $("#dpkToDate").val('__/__/____');
+            }
+            else if (shortName === "RADI") {
+                $("#radReportFilters").show();
+                $("#radReport").show();
+                $("#dpkFromDate").val('__/__/____');
+                $("#dpkToDate").val('__/__/____');
+            }
+            else if (shortName === "PMY") {
+                $("#pmyReportFilters").show();
+                $("#pmyReport").show();
+                $("#dpkFromDate").val('__/__/____');
+                $("#dpkToDate").val('__/__/____');
+            }
+            else if (shortName === "FIN") {
+                $("#finReportFilters").show();
+                $("#finReport").show();
+                $("#dpkFromDate").val('__/__/____');
+                $("#dpkToDate").val('__/__/____');
+            }
+        });
+
+        $("#lblService").text('Test');
+        //GetAllService('GENSRV', 'RADI')
+         //$("#ddl_Location").setValue('locationId');
+        $("#ddl_User").setValue('@ViewBag.DefaultUser');
+        $("#tblSection").DataTable(
+        {
+                  "bProcessing": true,
+                  "bFilter": true,
+                  //"aaData": lst,
+                  "deferRender": true,
+                  "destroy": true,
+                  "info": false,
+                  "paging": false,
+                  "scrollY": 200,
+                  "scroller": true,
+        });
+
+    });
+    //FINANCIALS================================================================================================
+
+    function PrintRevenueSummary() {
+    var fromDate = $("#findpkFromDate").getValue();
+    var toDate = $("#findpkToDate").getValue();
+
+    if (fromDate.trim() === "__/__/____") {
+        fromDate = ""
+    }
+    if (toDate.trim() === "__/__/____") {
+        toDate = ""
+    }
+    //var toDate = $("#dpkToDate").getValue();
+    var rptURL = '@Url.Content("~/Finance/Report/PrintDepartmentRevenueSummary")?fromDate=' + fromDate + '&toDate=' + toDate;
+    window.open(rptURL, '_blank');
+}
+
+function PrintDailySalesDetail() {
+    var fromDate = $("#findpkFromDate").getValue();
+    var toDate = $("#findpkToDate").getValue();
+    var DepartmentId = "";
+
+    if (fromDate.trim() === "__/__/____") {
+        fromDate = ""
+    }
+    if (toDate.trim() === "__/__/____") {
+        toDate = ""
+    }
+    //var toDate = $("#dpkToDate").getValue();
+    var rptURL = '@Url.Content("~/Finance/Report/PrintDailySalesDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&DepartmentId=' + DepartmentId;
+    window.open(rptURL, '_blank');
+}
+function PrintDoctorIncomeDetail() {
+     var fromDate = $("#findpkFromDate").getValue();
+     var toDate = $("#findpkToDate").getValue();
+    var DepartmentId = "";
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = ""
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = ""
+     }
+     var rptURL = '@Url.Content("~/Finance/Report/PrintDoctorIncomeDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&DepartmentId=' + DepartmentId;
+     window.open(rptURL, '_blank');
+}
+  @*function DownloadExpenseSummary() {
+
+      var fromDate = $("#dpkFromDate").getValue();
+      var toDate = $("#dpkToDate").getValue();
+      var accountType = $("#ddl_AccountType").getValue();
+
+      if (fromDate.trim() === "__/__/____") {
+          fromDate = ""
+      }
+      if (toDate.trim() === "__/__/____") {
+          toDate = ""
+      }
+      //var toDate = $("#dpkToDate").getValue();
+      var rptURL = '@Url.Content("~/Finance/Report/DownloadExpenseSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&AccountType=' + accountType;
+      window.open(rptURL, '_blank');
+    }
+
+   function PrintExpenseSummary() {
+
+       var fromDate = $("#dpkFromDate").getValue();
+       var toDate = $("#dpkToDate").getValue();
+       var accountType = $("#ddl_AccountType").getValue();
+
+       if (fromDate.trim() === "__/__/____") {
+           fromDate = ""
+       }
+       if (toDate.trim() === "__/__/____") {
+           toDate = ""
+       }
+       //var toDate = $("#dpkToDate").getValue();
+       var rptURL = '@Url.Content("~/Finance/Report/PrintExpenseSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&AccountType=' + accountType;
+       window.open(rptURL, '_blank');
+   }
+   function DownloadCashBookReport() {
+
+       var fromDate = $("#dpkFromDate").getValue();
+       var toDate = $("#dpkToDate").getValue();
+       if (fromDate.trim() === "__/__/____") {
+           fromDate = ""
+       }
+       if (toDate.trim() === "__/__/____") {
+           toDate = ""
+       }
+       //var toDate = $("#dpkToDate").getValue();
+       var rptURL = '@Url.Content("~/Finance/Report/DownloadCashBookReport")?fromDate=' + fromDate + '&toDate=' + toDate;
+       window.open(rptURL, '_blank');
+   }
+function PrintCashBookReport() {
+
+    var fromDate = $("#dpkFromDate").getValue();
+    var toDate = $("#dpkToDate").getValue();
+    if (fromDate.trim() === "__/__/____") {
+        fromDate = ""
+    }
+    if (toDate.trim() === "__/__/____") {
+        toDate = ""
+    }
+    //var toDate = $("#dpkToDate").getValue();
+    var rptURL = '@Url.Content("~/Finance/Report/PrintCashBook")?fromDate=' + fromDate + '&toDate=' + toDate;
+    window.open(rptURL, '_blank');
+}
+ function DownloadPaymentDetailReport() {
+     var voucherTypeId = $("#ddl_dll_VoucherType").getValue();
+     var Id = $("#txtPartyLocationId1").getValue();
+     var accountId = $("#txtAccountId").getValue();
+     var accountControlId = $("#ddl_ControlTypeProfileId").getValue();
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = ""
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = ""
+     }
+     //var toDate = $("#dpkToDate").getValue();
+     var rptURL = '@Url.Content("~/Finance/Report/DownloadPaymentDetailReport")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + Id + '&voucherTypeId=' + voucherTypeId + '&accountId=' + accountId + '&accountControlId=' + accountControlId
+     window.open(rptURL, '_blank');
+ }
+function PrintPaymentDetailReport() {
+    var voucherTypeId = $("#ddl_dll_VoucherType").getValue();
+    var Id = $("#txtPartyLocationId1").getValue();
+    var accountId = $("#txtAccountId").getValue();
+    var accountControlId = $("#ddl_ControlTypeProfileId").getValue();
+    var fromDate = $("#dpkFromDate").getValue();
+    var toDate = $("#dpkToDate").getValue();
+    if (fromDate.trim() === "__/__/____") {
+        fromDate = ""
+    }
+    if (toDate.trim() === "__/__/____") {
+        toDate = ""
+    }
+    //var toDate = $("#dpkToDate").getValue();
+    var rptURL = '@Url.Content("~/Finance/Report/PrintPaymentDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + Id + '&voucherTypeId=' + voucherTypeId + '&accountId=' + accountId + '&accountControlId=' + accountControlId
+    window.open(rptURL, '_blank');
+}
+
+        function DownloadReceiptDetailReport() {
+        var Id = $("#txtPartyLocationId1").getValue();
+        var accountId = $("#txtAccountId").getValue();
+        var accountControlId = $("#ddl_ControlTypeProfileId").getValue();
+
+        var voucherTypeId = $("#ddl_dll_VoucherType").getValue();
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        //var toDate = $("#dpkToDate").getValue();
+        var rptURL = '@Url.Content("~/Finance/Report/DownloadReceiptDetailReport")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + Id + '&voucherTypeId=' + voucherTypeId + '&accountId=' + accountId + '&accountControlId=' + accountControlId
+        window.open(rptURL, '_blank');
+    }
+        function PrintReceiptDetailReport() {
+        var Id = $("#txtPartyLocationId1").getValue();
+        var accountId = $("#txtAccountId").getValue();
+        var accountControlId = $("#ddl_ControlTypeProfileId").getValue();
+
+        var voucherTypeId = $("#ddl_dll_VoucherType").getValue();
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        //var toDate = $("#dpkToDate").getValue();
+        var rptURL = '@Url.Content("~/Finance/Report/PrintReceiptDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + Id + '&voucherTypeId=' + voucherTypeId + '&accountId=' + accountId + '&accountControlId=' + accountControlId
+        window.open(rptURL, '_blank');
+    }*@
+
+
+    //==========================================================================================================
+
+
+
+    //PHARMACY==================================================================================================
+    function Goto_pmyPrint(id) {
+        try {
+            Get_pmyReportTargetSource(id);
+
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+    function Get_pmyReportTargetSource(name)
+   {
+       try {
+           var dt = ""; new Date();
+           //if (!$("#dpkFromDate").validate(MSG_REQ)) return;
+           var fromDate = $("#pmydpkFromDate").getValue();
+           var toDate = $("#pmydpkToDate").getValue();
+           if (fromDate == "__/__/____") {
+               fromDate = "";
+           }
+           if (toDate == "__/__/____") {
+               toDate = "";
+           }
+
+           if ("SaleOrderSummary" == name) {
+               var rptURL = '@Url.Content("~/scm/Report/PrintSaleOrderDetail")?departmentComponentId=' + '&fromDate=' + fromDate + '&toDate=' + toDate;
+               window.open(rptURL, '_blank');
+           }
+           else if ("SaleOrderDetailSummary" == name) {
+               var rptURL = '@Url.Content("~/scm/Report/PrintSaleOrderProductDetail")?departmentComponentId=' + '&fromDate=' + fromDate + '&toDate=' + toDate;
+               window.open(rptURL, '_blank');
+           }
+           else if ("MedicineRevenueSummary" == name) {
+               var rptURL = '@Url.Content("~/scm/Report/PrintMedicineRevenueSummary")?departmentComponentId=' + '&fromDate=' + fromDate + '&toDate=' + toDate;
+               window.open(rptURL, '_blank');
+           }
+       } catch (e) {
+           console.log(e.message);
+       }
+    }
+    //==================================================================================================
+
+    //Radiology================================================================================================================================
+    function Downloading_radSaleOrderDetail() {
+     var fromDate = $("#raddpkFromDate").getValue();
+     var toDate = $("#raddpkToDate").getValue();
+     var shiftId = "";
+     var userId = $("#ddl_radUser").getValue();
+     var locationId = 101;
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+        var sectionString = MakeRadSectionString();
+     var rptURL = '@Url.Content("~/LIMS/Report/DownloadingSaleOrderDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&sectionString=' + sectionString + '&locationId=' + locationId;
+     window.open(rptURL, '_blank');
+ }
+       // Sale Order Detail //
+   function Print_radSaleOrderDetail() {
+
+       var fromDate = $("#raddpkFromDate").getValue();
+       var toDate = $("#raddpkToDate").getValue();
+       var shiftId = "";
+       var userId = $("#ddl_radUser").getValue();
+       var locationId =101;
+
+       if (fromDate.trim() === "__/__/____") {
+           fromDate = "";
+       }
+       if (toDate.trim() === "__/__/____") {
+           toDate = "";
+       }
+       var sectionString = MakeRadSectionString();
+       var rptURL = '@Url.Content("~/RIMS/Report/PrintSaleOrderDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&sectionString=' + sectionString + '&locationId=' + locationId;
+       window.open(rptURL, '_blank');
+   }
+
+        function Print_radDailySaleSummary() {
+
+    var fromDate = $("#raddpkFromDate").getValue();
+    var toDate = $("#raddpkToDate").getValue();
+    var locationId = 101;
+
+
+    if (fromDate.trim() === "__/__/____") {
+        fromDate = "";
+    }
+    if (toDate.trim() === "__/__/____") {
+        toDate = "";
+    }
+            var sectionString = MakeRadSectionString();
+    var rptURL = '@Url.Content("~/LIMS/Report/PrintDailySaleSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&locationId=' + locationId + '&sectionString=' + sectionString;
+    window.open(rptURL, '_blank');
+}
+
+    function Downloading_radDailyLabSalesSummary() {
+        debugger;
+
+        var fromDate = $("#raddpkFromDate").getValue();
+        var toDate = $("#raddpkToDate").getValue();
+        var locationId =101;
+        var DepartmentId = $("#ddl_radDepartment").getValue();
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeRadSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingDailyLabSalesSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+        window.open(rptURL, '_blank');
+    }
+
+     function Print_radDailyLabSalesSummary() {
+
+     var fromDate = $("#raddpkFromDate").getValue();
+     var toDate = $("#raddpkToDate").getValue();
+     var locationId = 101;
+     var DepartmentId = $("#ddl_radDepartment").getValue();
+
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+         var sectionString = MakeRadSectionString();
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabSalesSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+     window.open(rptURL, '_blank');
+ }
+    function Downloading_radDailyLabPatientDetail() {
+        debugger;
+
+        var fromDate = $("#raddpkFromDate").getValue();
+        var toDate = $("#raddpkToDate").getValue();
+        var shiftId = "";
+        var userId = $("#ddl_radUser").getValue();
+        var locationId = 101;
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeRadSectionString();
+        var DepartmentId = $("#ddl_radDepartment").getValue();
+        var rptURL = '@Url.Content("~/RIMS/Report/DownloadingDailyLabPatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+        window.open(rptURL, '_blank');
+    }
+
+    function Print_radDailyLabPatientDetail() {
+     debugger;
+
+     var fromDate = $("#raddpkFromDate").getValue();
+     var toDate = $("#raddpkToDate").getValue();
+     var shiftId = "";
+     var userId = $("#ddl_radUser").getValue();
+     var locationId =101;
+
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+        var sectionString = MakeRadSectionString();
+     var DepartmentId = $("#ddl_radDepartment").getValue();
+     var rptURL = '@Url.Content("~/RIMS/Report/PrintDailyLabPatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+     window.open(rptURL, '_blank');
+ }
+ //=======================================================================================================================================
+    $("#All").prop('checked', true);
+    $(".all").prop('checked', true);
+    $(".all").trigger("onchange");
+    debugger;
+        function GetSectionsByDepId(id) {
+        arrSections = [];
+        var _url = '@Url.Action("GetSectionsByDepId", "Report")';
+        var _data = "{Id:'" + id + "'}";
+        $.AjaxJsonRequest(_url, _data, function (reponse) {
+            if (reponse.lst == null) {
+                reponse.lst = [];
+            }
+            $("#tblSection").dataTable({
+                "bProcessing": true,
+                "aaData": reponse.lst,
+                "deferRender": true,
+                "destroy": true,
+                "paging": false,
+                "scroller": true,
+                "scrollY": 200,
+                "aoColumns": [
+                       // { "sTitle": "Order Id", "mData": "LabOrderId" },
+                        { "mData": "SectionId" },
+                        { "mData": "SectionName" },
+
+                        {
+                            mRender: function (data, type, row) {
+                                return '<input type="checkbox" class="checkbox all" onchange="SetSection(this.checked,' + row.SectionId + ');" autocomplete="off">'
+
+                            }
+                        }
+
+
+                ]
+            });
+            $("#All").prop('checked', true);
+            $("#All").trigger('change');
+
+
+
+        });
+    }
+
+    function SetlabSection(check, id) {
+        try {
+            if (check) {
+                debugger;
+                arrlabSections.push(id);
+            }
+            else {
+                if (arrlabSections != null) {
+                    for (var i = 0; i < arrlabSections.length; i++) {
+                        if (arrlabSections[i] == id) {
+                            arrlabSections.splice(i, 1);
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function SetRadSection(check, id) {
+        try {
+            if (check) {
+                debugger;
+                arrRadSections.push(id);
+            }
+            else {
+                if (arrRadSections != null) {
+                    for (var i = 0; i < arrRadSections.length; i++) {
+                        if (arrRadSections[i] == id) {
+                            arrRadSections.splice(i, 1);
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function SelectAll(check) {
+        debugger;
+        $(".all").setValue(check);
+        $(".all").trigger("onchange");
+    }
+    function MakeLabSectionString() {
+        var str = "";
+        try {
+            if (arrlabSections != null) {
+                for (var i = 0; i < arrlabSections.length; i++) {
+                    str += arrlabSections[i] + ",";
+                }
+            }
+            return str;
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function MakeRadSectionString() {
+        var str = "";
+        try {
+            if (arrRadSections != null) {
+                for (var i = 0; i < arrRadSections.length; i++) {
+                    str += arrRadSections[i] + ",";
+                }
+            }
+            return str;
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+
+    function PrintLabServiceOrderReport() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var partyLocation = "";
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintLabServiceOrderParty")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLoc=' + partyLocation;
+        window.open(rptURL, '_blank');
+    }
+    function PrintPatientOrderTracking() {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/PrintPatientOrderTracking")?DocMovementId=' + 0 + '&fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString ;
+            ;
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function DownloadingPatientOrderTracking() {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/DownloadingPatientOrderTracking")?DocMovementId=' + 0 + '&fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString;
+            ;
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function PrintReferalWiseSummary() {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+            var partyLocation = "";
+            var refPersonName = "";
+
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/PrintReferalWiseSummary")?DocMovementId=' + 0 + '&fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString + '&partyLocationId=' + partyLocation + '&RefPersonName=' + refPersonName;
+            ;
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function DownloadReferalWiseSummary() {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+            var partyLocation = "";
+            var refPersonName = "";
+
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/DownloadReferalWiseSummary")?DocMovementId=' + 0 + '&fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString + '&partyLocationId=' + partyLocation + '&RefPersonName=' + refPersonName;
+            ;
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function PrintOPDRequistionDetail()
+    {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+            var partyLocation ="";
+            var refPersonName ="";
+
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/PrintOPDRequistionDetail")?DocMovementId=' + 0 + '&fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString + '&partyLocationId=' + partyLocation + '&RefPersonName=' + refPersonName;
+            ;
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function DownloadOPDRequistionDetail() {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+            var partyLocation = "";
+            var refPersonName = "";
+
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/DownloadOPDRequistionDetail")?DocMovementId=' + 0 + '&fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString + '&partyLocationId=' + partyLocation + '&RefPersonName=' + refPersonName;
+            ;
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function PrintReferalWisePatientDetail() {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+            var partyLocation ="";
+            var refPersonName = "";
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/PrintReferalWiseDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString + '&partyLocationId=' + partyLocation + '&RefPersonName=' + refPersonName;
+
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function DownloadReferalWisePatientDetail() {
+        try {
+            var fromDate = $("#dpkFromDate").getValue();
+            var toDate = $("#dpkToDate").getValue();
+            var partyLocation = "";
+            var refPersonName = "";
+            if (fromDate.trim() === "__/__/____") {
+                fromDate = ""
+            }
+            if (toDate.trim() === "__/__/____") {
+                toDate = ""
+            }
+            var sectionString = MakeSectionString();
+            var rptURL = '@Url.Content("~/LIMS/Report/DownloadReferalWisePatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&sectionString=' + sectionString + '&partyLocationId=' + partyLocation + '&RefPersonName=' + refPersonName;
+
+            window.open(rptURL, '_blank');
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function PrintCoperatePatientDetail() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var partyLocation = "";
+        var billCategoryId = "";
+        var PatientNo = "";
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintCoperatePatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + partyLocation + '&PatientNo=' + PatientNo + '&sectionString=' + sectionString + '&BillCategoryId=' + billCategoryId;
+        window.open(rptURL, '_blank');
+    }
+    function DownloadingCoperatePatientDetail() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var partyLocation = "";
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingCoperatePatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + partyLocation + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+
+    function PrintCoperatePatientSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var partyLocation = "";
+        var PatientNo ="";
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintCoperatePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + partyLocation + '&PatientNo=' + PatientNo + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+
+    function DownloadingCoperatePatientSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var partyLocation = "";
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingCoperatePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + partyLocation + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+
+    function InvoiceDetailSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var docId = "51";
+        var shiftLocationId = "";
+        var userId = $("#ddl_User").getValue();
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintInvoiceDetailShiftWise")?docId=' + docId + '&shiftLocationId=' + shiftLocationId + '&userId=' + userId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+        window.open(rptURL, '_blank');
+    }
+
+
+    function ReceiptSummary(type) {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var docId = "";
+        if (type == "CLRBAL") {
+            docId = "15";
+        }
+        else {
+            docId = "15";
+        }
+
+        var shiftLocationId ="";
+         var userId = $("#ddl_labUser").getValue();;
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintLabOrderReceipt")?docId=' + docId + '&shiftLocationId=' + shiftLocationId + '&userId=' + userId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+        window.open(rptURL, '_blank');
+    }
+
+    function PaymentSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintLabOrderPayment")?fromDate=' + fromDate + '&toDate=' + toDate;
+        window.open(rptURL, '_blank');
+    }
+
+    function PrintLabServiceOrderSummaryReport() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var partyLocation = "";
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintLabServiceOrderSummaryReport")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLoc=' + partyLocation;
+        window.open(rptURL, '_blank');
+    }
+
+
+    function DownloadDepartmentWisePatientSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadDepartmentWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate;
+        window.open(rptURL, '_blank');
+
+    }
+    //Add By Waqar
+    function PrintDepartmentWisePatientSummary()
+    {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+
+        if (fromDate.trim() === "__/__/____")
+        {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____")
+        {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintDepartmentWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate;
+        window.open(rptURL, '_blank');
+
+    }
+    // Add by waqar
+    function PrintWardtWisePatientSummary()
+    {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = ""
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = ""
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintWardtWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate;
+        window.open(rptURL, '_blank');
+
+    }
+
+    //Added By Hassaan
+    function PrintRadiologistWisePatientSummary() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var radiologist = "";
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintRadiologistWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&radiologist=' + radiologist;
+        window.open(rptURL, '_blank');
+    }
+    //Added By Hassaan
+
+
+    function GetPartyDetailsByPartyId(partyId) {
+        var _url = '@Url.Action("GetPartyDetailsByPartyId", "Report")';
+        var _data = "{partyId:'" + partyId + "'}";
+        $.AjaxJsonRequest(_url, _data, function (msg) {
+            if (msg != null) {
+                var items = '';
+                $("#ddl_PartyLocation").empty();
+                if (msg.length > 0) {
+                    $.each(msg[0], function (index, item) {
+
+                        items += "<option value='" + item.PartyLocationId + "'>" + item.PartyLocationName + "</option>";
+                    });
+                    $("#ddl_PartyLocation").html(items);
+                }
+            }
+            else {
+                ShowMessage('1', "NO Record Found");
+            }
+        });
+    }
+
+    function PrintDailyLabDoctorPatientDetail() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var radiologist = "";
+        var shiftLocationId = "";
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabDoctorPatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&radiologist=' + radiologist + '&shiftId=' + shiftLocationId;
+        window.open(rptURL, '_blank');
+    }
+
+    function PrintDailyLabDoctorSummary() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var radiologist ="";
+        var shiftLocationId ="";
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabDoctorSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&radiologist=' + radiologist + '&shiftId=' + shiftLocationId;
+        window.open(rptURL, '_blank');
+    }
+
+    function PrintDailyLabPatientDetail() {
+        debugger;
+
+        var fromDate = $("#labdpkFromDate").getValue();
+        var toDate = $("#labdpkToDate").getValue();
+        var shiftId = "";
+        var userId = $("#ddl_labUser").getValue();
+        var locationId = 101;
+        var billCategoryId = "";
+
+        var sectionString = MakeLabSectionString();
+        var DepartmentId = $("#ddl_labDepartment").getValue();
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabPatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId + '&BillCategoryId=' + billCategoryId;
+        window.open(rptURL, '_blank');
+    }
+    function DownloadingDailyLabPatientDetail() {
+
+        var fromDate = $("#labdpkFromDate").getValue();
+        var toDate = $("#labdpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+
+        var billCategoryId ="";
+
+        var sectionString = MakeLabSectionString();
+        var DepartmentId = $("#ddl_Department").getValue();
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingDailyLabPatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId + '&BillCategoryId=' + billCategoryId;
+        window.open(rptURL, '_blank');
+    }
+    function ViewDailyLabPatientDetail() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = 'rptName=DLPD&fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString;
+
+
+        window.open("../../Viewer/WebReportViewer.aspx?" + rptURL + "", 'mywindow', 'fullscreen=yes, scrollbars=auto');
+
+        //window.open(rptURL, '_blank');
+    }
+
+    function PrintDailyLabSalesSummary() {
+
+        var fromDate = $("#labdpkFromDate").getValue();
+        var toDate = $("#labdpkToDate").getValue();
+        var locationId = 101;
+        var DepartmentId = $("#ddl_Department").getValue();
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeLabSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabSalesSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+        window.open(rptURL, '_blank');
+    }
+
+
+    function DownloadingDailyLabSalesSummary() {
+
+        var fromDate = $("#labdpkFromDate").getValue();
+        var toDate = $("#labdpkToDate").getValue();
+        var locationId =101;
+        var DepartmentId = $("#ddl_Department").getValue();
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeLabSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingDailyLabSalesSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&locationId=' + locationId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+        window.open(rptURL, '_blank');
+    }
+
+
+    function PrintDailySaleSummary() {
+
+        var fromDate = $("#labdpkFromDate").getValue();
+        var toDate = $("#labdpkToDate").getValue();
+        var locationId =101;
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeLabSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintDailySaleSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&locationId=' + locationId + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+
+    // Sale Order Detail //
+    function PrintSaleOrderDetail() {
+
+        var fromDate = $("#labdpkFromDate").getValue();
+        var toDate = $("#labdpkToDate").getValue();
+        var shiftId ="";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId =101;
+        var billCategoryId ="";
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeLabSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintSaleOrderDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&sectionString=' + sectionString + '&locationId=' + locationId + '&BillCategoryId=' + billCategoryId;
+        window.open(rptURL, '_blank');
+    }
+    function PrintSaleOrderDetailAll() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId ="";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+        var billCategoryId ="";
+        var testId = "";
+        var ddl_Party = "";
+        var ddl_PartyLocation ="";
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var ISHeadOffice = false;
+
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintSaleOrderDetailALL")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&sectionString=' + sectionString + '&locationId=' + locationId + '&BillCategoryId=' + billCategoryId + '&PartyID=' + ddl_Party + '&ServiceId=' + testId + '&ISHeadOffice=' + ISHeadOffice + '&ddl_PartyLocation=' + ddl_PartyLocation;
+        window.open(rptURL, '_blank');
+    }
+    function DownloadingSaleOrderDetail() {
+
+        var fromDate = $("#labdpkFromDate").getValue();
+        var toDate = $("#labdpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId =101;
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeLabSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingSaleOrderDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&sectionString=' + sectionString + '&locationId=' + locationId;
+        window.open(rptURL, '_blank');
+    }
+
+    // End Sale Orde Detail //
+
+
+    //Start Patient Order Detail Section Wise
+
+    function PrintSalesDetailSectionWise() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+        var billCategoryId = "";
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintSalesDetailSectionWise")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString + '&BillCategoryId=' + billCategoryId;
+        window.open(rptURL, '_blank');
+    }
+    function DownloadingSalesDetailSectionWise() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingSalesDetailSectionWise")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+    function PrintSalesSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId =101;
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintSalesSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+    function DownloadingSalesSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingSalesSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+    function PrintOPDDoctorWisePatientSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+        var partyLocation ="";
+        var refPersonName = "";
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintOPDDoctorWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString + '&partyLocation=' + partyLocation + '&refPersonName=' + refPersonName;
+        window.open(rptURL, '_blank');
+    }
+    function DownloadOPDDoctorWisePatientSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+        var partyLocation ="";
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var sectionString = MakeSectionString();
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadOPDDoctorWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&sectionString=' + sectionString + '&partyLocation=' + partyLocation;
+        window.open(rptURL, '_blank');
+    }
+    function PrintSalesSummarySectionWise() {
+
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintSalesSummarySectionWise")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId;
+        window.open(rptURL, '_blank');
+    }
+    function PrintTestWisePatientSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+        var refPersonName = "";
+        var testId ="";
+        var sectionString = MakeSectionString();
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/PrintTestWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+    function DownloadingTestWisePatientSummary() {
+        var fromDate = $("#dpkFromDate").getValue();
+        var toDate = $("#dpkToDate").getValue();
+        var shiftId = "";
+         var userId = $("#ddl_labUser").getValue();;
+        var locationId = 101;
+        var refPersonName = "";
+        var testId ="";
+        var sectionString = MakeSectionString();
+
+        if (fromDate.trim() === "__/__/____") {
+            fromDate = "";
+        }
+        if (toDate.trim() === "__/__/____") {
+            toDate = "";
+        }
+        var rptURL = '@Url.Content("~/LIMS/Report/DownloadingTestWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString;
+        window.open(rptURL, '_blank');
+    }
+    // Waqars
+
+     function PrintTestWisePatientDetail() {
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var shiftId = "";
+      var userId = $("#ddl_labUser").getValue();;
+     var locationId = 101;
+     var refPersonName ="";
+     var testId = "";
+     var billCategoryId ="";
+     var sectionString = MakeSectionString();
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintTestWisePatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString + '&BillCategoryId=' + billCategoryId;
+     window.open(rptURL, '_blank');
+ }
+ function DownloadingTestWisePatientDetail() {
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var shiftId = "";
+      var userId = $("#ddl_labUser").getValue();;
+     var locationId = 101;
+     var refPersonName = "";
+     var testId = "";
+     var sectionString = MakeSectionString();
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/DownloadingTestWisePatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString;
+     window.open(rptURL, '_blank');
+ }
+ function PrintradialogyShareSummary() {
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var shiftId ="";
+      var userId = $("#ddl_labUser").getValue();;
+     var locationId = 101;
+
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintradialogyShareSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId;
+     window.open(rptURL, '_blank');
+ }
+ //END Patient Order Detail Section Wise
+
+ function PrintDailyLabPatientStatus() {
+
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var radiologist = "";
+     var shiftId = "";
+      var userId = $("#ddl_labUser").getValue();;
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var sectionString = MakeSectionString();
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabPatientStatus")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&sectionString=' + sectionString;
+     window.open(rptURL, '_blank');
+ }
+ function DownloadingDailyLabPatientStatus() {
+
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var radiologist = "";
+     var shiftId = "";
+      var userId = $("#ddl_labUser").getValue();;
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var sectionString = MakeSectionString();
+     var rptURL = '@Url.Content("~/LIMS/Report/DownloadingDailyLabPatientStatus")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&sectionString=' + sectionString;
+     window.open(rptURL, '_blank');
+ }
+
+ function PrintDailyLabReferralPatientDetail() {
+
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var radiologist = "";
+     var partyLocationId = "";
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabReferralPatientDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + partyLocationId;
+     window.open(rptURL, '_blank');
+ }
+
+ function PrintDailyLabReferralSummary() {
+
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var partyLocationId = "";
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintDailyLabReferralSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&partyLocationId=' + partyLocationId;
+     window.open(rptURL, '_blank');
+ }
+
+ function PrintMonthlyReferralSummary() {
+
+     var month = $("#txtMonth").getValue();
+     var year = $("#txtYear").getValue();
+     var partyLocationId = "";
+
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintMonthlyReferralSummary")?month=' + month + '&year=' + year + '&partyLocationId=' + partyLocationId;
+     window.open(rptURL, '_blank');
+ }
+ function PrintCreditSalesDetail() {
+     debugger;
+
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var partyLocationId = "";
+     var departmentId = $("#ddl_Department").getValue();
+
+
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintCreditSalesDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&PartyLocationId=' + partyLocationId + '&DepartmentId=' + departmentId;
+     window.open(rptURL, '_blank');
+ }
+
+
+ function DownloadingCreditSalesDetail() {
+     debugger;
+
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var partyLocationId = "";
+     var departmentId = $("#ddl_Department").getValue();
+
+
+     var rptURL = '@Url.Content("~/LIMS/Report/DownloadingCreditSalesDetail")?fromDate=' + fromDate + '&toDate=' + toDate + '&PartyLocationId=' + partyLocationId + '&DepartmentId=' + departmentId;
+     window.open(rptURL, '_blank');
+ }
+ function PrintSectionWisePatientSummary() {
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var shiftId = "";
+      var userId = $("#ddl_labUser").getValue();;
+     var locationId = 101;
+     var refPersonName = "";
+     var testId = "";
+     var sectionString = MakeSectionString();
+     var DepartmentId = $("#ddl_Department").getValue();
+
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintSectionWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+     window.open(rptURL, '_blank');
+ }
+
+
+ function PrintSectionWiseStrength() {
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var shiftId = "";
+      var userId = $("#ddl_labUser").getValue();;
+     var locationId = 101;
+     var refPersonName ="";
+     var testId = "";
+     var sectionString = MakeSectionString();
+     var DepartmentId = $("#ddl_Department").getValue();
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintSectionWiseStrength")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+     window.open(rptURL, '_blank');
+ }
+
+
+
+
+ function DownloadingSectionWisePatientSummary() {
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var shiftId ="";
+      var userId = $("#ddl_labUser").getValue();;
+     var locationId = 101;
+     var refPersonName = "";
+     var testId = "";
+     var sectionString = MakeSectionString();
+     var DepartmentId = $("#ddl_Department").getValue();
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/DownloadingSectionWisePatientSummary")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString + '&DepartmentId=' + DepartmentId;
+     window.open(rptURL, '_blank');
+ }
+
+ function PrintTestWiseStrength() {
+     var fromDate = $("#dpkFromDate").getValue();
+     var toDate = $("#dpkToDate").getValue();
+     var shiftId = "";
+      var userId = $("#ddl_labUser").getValue();;
+     var locationId = 101;
+     var refPersonName ="";
+     var testId ="";
+     var sectionString = MakeSectionString();
+
+     if (fromDate.trim() === "__/__/____") {
+         fromDate = "";
+     }
+     if (toDate.trim() === "__/__/____") {
+         toDate = "";
+     }
+     var rptURL = '@Url.Content("~/LIMS/Report/PrintTestWiseStrength")?fromDate=' + fromDate + '&toDate=' + toDate + '&userId=' + userId + '&shiftId=' + shiftId + '&locationId=' + locationId + '&refPersonName=' + refPersonName + '&testId=' + testId + '&sectionString=' + sectionString;
+     window.open(rptURL, '_blank');
+ }
+
+    function GotoPrint(id) {
+        try {
+            GetReportTargetSource(id);
+
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+    function GetReportTargetSource(name)
+    {
+        try {
+
+            if ("PrintOPDSalesDetail" == name) {
+                debugger;
+
+                var dt = ""; new Date();
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var UserId = $("#ddl_User").getValue();
+
+                var IsComplementary = $("#ChkComplementary").is(':checked')
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintClinicSalesDetail")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate + '&UserId=' + UserId + '&IsComplementary=' + IsComplementary;
+                window.open(rptURL, '_blank');
+            }
+            else  if ("PrintOPDSalesDetailServiceWise" == name) {
+                debugger;
+
+                var dt = ""; new Date();
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var UserId = $("#ddl_User").getValue();
+
+                var IsComplementary = $("#ChkComplementary").is(':checked')
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintClinicSalesServiceDetail")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate + '&UserId=' + UserId + '&IsComplementary=' + IsComplementary;
+                window.open(rptURL, '_blank');
+            }
+            else if ("PrintProcedureCosting" == name) {
+             debugger;
+
+                 var dt = ""; new Date();
+                 var fromDate = $("#clndpkFromDate").getValue();
+                 var toDate = $("#clndpkToDate").getValue();
+                 if (fromDate == "__/__/____") {
+                     fromDate = "";
+                 }
+                 if (toDate == "__/__/____") {
+                     toDate = fromDate;
+                 }
+                 var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                 var UserId = $("#ddl_User").getValue();
+
+                 var IsComplementary = $("#ChkComplementary").is(':checked')
+                 var rptURL = '@Url.Content("~/eClinic/Report/PrintProcedureCostingSalesDetail")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate + '&UserId=' + UserId + '&IsComplementary=' + IsComplementary;
+                 window.open(rptURL, '_blank');
+            }
+            else if ("DailyPatientDetail" == name) {
+
+                    var dt = "";new Date();
+                    //if (!$("#dpkFromDate").validate(MSG_REQ)) return;
+                    var fromDate = $("#clndpkFromDate").getValue();
+                    var toDate = $("#clndpkToDate").getValue();
+                    if (fromDate == "__/__/____") {
+                        fromDate = "";
+                    }
+                    if (toDate == "__/__/____") {
+                        toDate = fromDate;
+                    }
+                    var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                    var rptURL = '@Url.Content("~/eClinic/Report/PrintDailyPatientDetail")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+                    window.open(rptURL, '_blank');
+                }
+            else if ("DownloadDailyPatientDetail" == name) {
+
+                var dt = ""; new Date();
+                //if (!$("#dpkFromDate").validate(MSG_REQ)) return;
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var rptURL = '@Url.Content("~/eClinic/Report/DownloadDailyPatientDetail")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+                window.open(rptURL, '_blank');
+            }
+            else if ("DailyDepartmentSummary" == name) {
+                //if (!$("#dpkFromDate").validate(MSG_REQ)) return;
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintDailyDepartmentSummary")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+                window.open(rptURL, '_blank');
+            }
+            else if ("MonthlyDepartmentSummary" == name) {
+                //if (!$("#ddl_Patient").validate(MSG_REQ)) return;
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintClinicPatientPrescriptionByPatientId")?Id=' + $("#ddl_Patient").getValue();
+                window.open(rptURL, '_blank');
+            }
+            else if ("PatientRegister" == name) {
+                //if (!$("#ddl_Patient").validate(MSG_REQ)) return;
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintClinicPatientInvoiceByPatient")?Id=' + $("#ddl_Patient").getValue();;
+                window.open(rptURL, '_blank');
+            }
+
+            else if ("PrintPatientDepartmentVist" == name) {
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintPatientDepartmentVist")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+                window.open(rptURL, '_blank');
+            }
+            else if ("DailyPatientAssessment" == name) {
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintDailyPatientAssessment")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+                window.open(rptURL, '_blank');
+            }
+            else if ("PrintAppontmentList" == name) {
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintAppontmentList")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+                window.open(rptURL, '_blank');
+            }
+            else if ("PrintCancelledAppontmentsList" == name) {
+                var fromDate = $("#clndpkFromDate").getValue();
+                var toDate = $("#clndpkToDate").getValue();
+                if (fromDate == "__/__/____") {
+                    fromDate = "";
+                }
+                if (toDate == "__/__/____") {
+                    toDate = fromDate;
+                }
+                var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+                var rptURL = '@Url.Content("~/eClinic/Report/PrintCancelledAppontmentsList")?departmentComponentId=' + departmentComponentId + '&fromDate=' + fromDate + '&toDate=' + toDate;
+                window.open(rptURL, '_blank');
+            }
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+
+
+
+</script>

@@ -1,0 +1,940 @@
+@using Semantech.BAL.Code;
+@model IEnumerable<Semantech.BO.ERP.ADO.PatientOrder>
+
+@{
+    ViewBag.Title = "Invoice Center";
+    Layout = "~/Views/Shared/_AdminLteLayout.cshtml";
+
+    ViewBag.IsShowOPDQueueInLAB = Semantech.BAL.Code.BaseRepository.GetLocationSetting.IsShowOPDQueueInLAB;
+    ViewBag.IsShowOPDReqQueueInLAB = Semantech.BAL.Code.BaseRepository.GetLocationSetting.IsShowOPDReqQueueInLAB;
+    ViewBag.IsShowIPDQueueInLAB = Semantech.BAL.Code.BaseRepository.GetLocationSetting.IsShowIPDQueueInLAB;
+    ViewBag.IsShowIPDReqQueueInLAB = Semantech.BAL.Code.BaseRepository.GetLocationSetting.IsShowIPDReqQueueInLAB;
+    ViewBag.IsShowInquiryQueueInLAB = Semantech.BAL.Code.BaseRepository.GetLocationSetting.IsShowInquiryQueueInLAB;
+    ViewBag.IsShowLabAdmitQueueInLAB = Semantech.BAL.Code.BaseRepository.GetLocationSetting.IsShowLabAdmitQueueInLAB;
+
+}
+<style>
+    .inputpicker-div {
+        width: 100% !important;
+    }
+
+    #isFullyApproved {
+        background-color: lightgreen;
+    }
+
+    #invoiced {
+        background-color: #f39c12;
+    }
+
+    #isonchance {
+        background-color: #008000;
+    }
+
+    #iscancel {
+        background-color: #dd4b39;
+    }
+
+    #isNotCover {
+        background-color: lightgray;
+    }
+
+    #isPartiallyApprovedwithInquiry {
+        background-color: orange;
+    }
+
+    #isFullyRejected {
+        background-color: lightcoral;
+    }
+
+    #isFullyCancelled {
+        background-color: teal;
+    }
+
+    #isPartiallyApproved {
+        background-color: #ffecb3;
+    }
+
+    .ColorDiv {
+        width: 20px;
+        height: 20px;
+        float: left;
+        border-color: black;
+        border-width: medium;
+    }
+</style>
+<div class="container">
+    <div class="row" style="display:none">
+        <ol class="breadcrumb">
+            <li><a id="liDashBoardUrl" href="#">Dashboard</a></li>
+            <li class="active">Procedure Invoice List</li>
+        </ol>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-topheading">
+            Filter Box
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-3" style="display:none">
+                        <div class="form-group">
+                            <label>Location</label>
+                            <select class="form-control" id="ddl_Location" onchange="GetAllClinicPatientOrder(true)">
+                                <option value="0">All</option>
+                                @foreach (var item in ViewBag.ddl_Location)
+                                {
+                                    if (BaseRepository.GetLoginLocationId() == item.LocationId)
+                                    {
+                                        <option selected value="@item.LocationId">@item.LocationName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.LocationId">@item.LocationName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2" style="display:none">
+                        <label>Visit No</label>
+                        <input type="text" class="form-control" id="txtOrderNo" />
+                    </div>
+                    <div class="col-md-2">
+                        <label>
+                            Mobile No
+                        </label>
+                        <input type="text" class="form-control" id="txtMobileNo" />
+                    </div>
+                    <div class="col-md-2">
+                        <label>
+                            National ID (QID)
+                        </label>
+                        <input type="text" class="form-control" id="txtQID" />
+                    </div>
+                    <div class="col-md-2">
+                        <label>
+                            MRN (File No.)
+                        </label>
+                        <input type="text" class="form-control" id="txtMRN" />
+                    </div>
+                    <div class="col-md-2">
+                        <label>
+                            Visit No
+                        </label>
+                        <input type="text" class="form-control" id="txtVisitNo" />
+                    </div>
+                    <div class="col-md-1">
+                        <label>From Date</label>
+                        <div class='input-group'>
+                            <input type="text" class="form-control datepickker" id="dpkFromDate" value="@DateTime.Now.AddMonths(-1).ToShortDateString()" />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label>To Date</label>
+                        <div class='input-group'>
+                            <input type="text" class="form-control datepickker" id="dpkToDate" value="@DateTime.Now.ToShortDateString()" />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-1" style=" margin-top: 16px;">
+                        <input type="button" value="Load" class="btn btn-primary" onclick="GetAllPatientOrder(true);" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading" style="display:none">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-6">Invoices</div>
+                        <div class="col-md-6">
+                                <button type="button" class="btn btn-primary pull-right" onclick="location.href='@Url.Action("Index", "ProcedureInvoice")'" style="margin-top: -8px;"><b>New</b></button>
+                                @*@Html.Raw(@Html.ActionLink("[AddNew]", "Index", "PatientSlip", new { Area = "OPD" }).ToHtmlString().Replace("[AddNew]", "<img src='/Images/Common/Add_New.png' style='width:30px;height:30px;float: right;'/>"))*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <ul class="nav nav-tabs" style="margin-top:1%;">
+                <li class="active"><a data-toggle="tab" id="IdtabOrders" href="#tabOrders">Pending Invoices</a></li>
+                <li><a data-toggle="tab" id="IdtabClinicOrders" href="#tabClinicOrders">Lab Invoices</a></li>
+                <li style="display:none"><a data-toggle="tab" id="IdtabPatientInvoice" href="#tabPatientInvoice">Completed Invoices</a></li>
+            </ul>
+
+            <div class="panel-body">
+                <div class="tab-content">
+                    <div id="tabOrders" class="tab-pane fade in active">
+                        <div class="row">
+                            <div style="padding-left:0px;">
+                                <div class="row" style="margin-top:1%;">
+                                    <div>
+                                        <div class="panel panel-default">
+                                            <div class="clearfix"></div>
+                                            <div class="panel-body">
+                                                <div class="row" style="margin-bottom:1%; display:none">
+                                                    <div class="col-md-1">
+                                                    </div>
+                                                    <div class="col-md-11" style="margin-top:0.4%;">
+                                                        <div class="col-md-2 " id="isBookDiv">
+                                                            <div class="form-group">
+                                                                <div id="isFullyApproved" class="ColorDiv col-md-1"></div>    @*--Green--*@
+                                                                <div id="lblIsBooked" class="col-md-10" style="margin-left: 5px;">Fully Approved</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2" id="isConfirmedDiv">
+                                                            <div class="form-group">
+                                                                <div id="isPartiallyApproved" class="ColorDiv col-md-1"></div>           @*--light Yellow--*@
+                                                                <div id="lblIsConfirmed" class="col-md-10" style="margin-left: 5px;">Partially Approved</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2" id="isArrivedDiv">
+                                                            <div class="form-group">
+                                                                <div id="isPartiallyApprovedwithInquiry" class="ColorDiv col-md-1"></div>            @*-- Orrange-- *@
+                                                                <div id="lblisArrived" class="col-md-10" style="margin-left: 5px;">Partially Approved with Inquiry</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2" id="isWaitingDiv">
+                                                            <div class="form-group">
+                                                                <div id="isFullyRejected" class="ColorDiv col-md-1"></div>            @*-- light coral-- *@
+                                                                <div id="lbliisWaiting" class="col-md-10" style="margin-left: 5px;">Fully Rejected</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2" id="isExamedDiv">
+                                                            <div class="form-group">
+                                                                <div id="isFullyCancelled" class="ColorDiv col-md-1"></div>            @*-- teal-- *@
+                                                                <div id="lblisExamed" class="col-md-10" style="margin-left: 5px;">Fully Cancelled</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2" id="isPrescribedDiv">
+                                                            <div class="form-group">
+                                                                <div id="isNotCover" class="ColorDiv col-md-1"></div>            @*-- light gray-- *@
+                                                                <div id="lblisPrescribed" class="col-md-10" style="margin-left: 5px;">Not Cover</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="table-responsive" style="background-color: white; width: 101%;" id="mainList">
+                                                            <div id="dvData">
+                                                                <table id="tblInsuranceApproved" style="text-align:center" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                                    <thead>
+                                                                        <tr class="noExl">
+                                                                            <th>
+                                                                                MRN (File No.)
+                                                                            </th>
+                                                                            <th> Patient Name</th>
+                                                                            <th> Age / Gender</th>
+                                                                            <th> Mobile No</th>
+                                                                            @*<th> Visit No</th>*@
+                                                                            <th> Procedure</th>
+                                                                            <th> Bill Category</th>
+                                                                            @*<th> Insurance Company</th>*@
+                                                                            <th> OPD / Doctor</th>
+                                                                            <th> Date</th>
+                                                                            @*<th> Status</th>
+                                                                <th> Status File</th>*@
+                                                                            <th> Proceed</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody></tbody>
+                                                                    <tfoot>
+                                                                    </tfoot>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tabClinicOrders" class="tab-pane fade in">
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            <div style="padding-left:0px;">
+
+                                <div class="row" style="margin-top:1%;">
+                                    <div>
+                                        <div class="panel panel-default">
+                                            <div class="clearfix"></div>
+                                            <div class="panel-body">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="table-responsive" style="background-color: white; width: 101%;" id="mainList">
+                                                            <div id="dvData">
+                                                                <table id="tblCashReject" style="text-align:center" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                                    <thead>
+                                                                        <tr class="noExl">
+                                                                            <th> MRN (File No.) </th>
+                                                                            <th> Patient Name </th>
+                                                                            <th> Age/Gender </th>
+                                                                            <th> Mobile No </th> @*new update*@
+                                                                            <th> Visit No </th>
+                                                                            <th> Bill Category </th>
+                                                                            <th> Test Names </th>
+                                                                            <th> Ordered By </th>
+                                                                            <th> Order Date </th>
+                                                                            @*<th> Status</th>
+                                                            <th> Status File</th>*@
+                                                                            <th> Proceed </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody></tbody>
+                                                                    <tfoot>
+                                                                    </tfoot>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--<div id="tabPatientInvoice" class="tab-pane fade in" style="display:none">
+                        <div class="col-md-12">
+                            <div class="table-responsive" style="background-color:white;width: 101%;">
+                                <div id="dvDatas">
+                                    <table style="text-align:center" id="tblPatientInvoice" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                        <thead>
+                                            <tr class="noExl">
+                                                <th>
+                                                    MRN (File No.)
+                                                </th>
+                                                <th> Patient Name</th>
+                                                <th> Age/ Gender</th>
+                                                <th> Mobile No</th>-->
+                                                @*<th> Visit No</th>*@
+                                                <!--<th> Procedure</th>
+                                                <th> Visit No</th>
+                                                <th> Bill Category</th>
+                                                <th> Payment Received</th>
+                                                <th>OPD / Doctor</th>
+                                                <th> Date</th>
+                                                <th> Print</th>
+                                                <th> Edit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                        <tfoot>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    var editor;
+    var isOrderNo = false;
+    var isMobile = false;
+    var isQID = false;
+    var isMRN = false;
+    var isVisitNo = false;
+    var shortName = "";
+    var isNIDNo = false;
+    var isMRNNo = false;
+    var lstLabOrder = new Array();
+    $(document).ready(function () {
+        shortName = '@ViewBag.RouteType';
+        if ('@ViewBag.RouteType == "OPD"') {
+            $('.nav-tabs a[href="#tabInquiry"]').tab('show');
+            $("#liTabInquiry").trigger('onclick');
+        }
+        GetAllPatientOrder(true);
+
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            debugger
+
+            var table = $("#tblOrder").DataTable();
+            table.columns.adjust().draw();
+            table = $("#tblRequsition").DataTable();
+            table.columns.adjust().draw();
+            table = $("#tblIPDPatient").DataTable();
+            table.columns.adjust().draw();
+            table = $("#tblIPDPatientReq").DataTable();
+            table.columns.adjust().draw();
+            table = $("#tblInquiry").DataTable();
+            table.columns.adjust().draw();
+        });
+
+
+        $("#txtOrderNo").keyup(function (e) {
+            if ($("#txtOrderNo:focus") && (e.keyCode === 13)) {
+                isOrderNo = true;
+                //GetAllClinicPatientOrder(false);
+                GetAllPatientOrder(false);
+                $("#txtOrderNo").setValue('');
+            }
+        });
+        $("#txtMobileNo").keyup(function (e) {
+            if ($("#txtMobileNo:focus") && (e.keyCode === 13)) {
+                isMobile = true;
+                //GetAllClinicPatientOrder(false);
+                GetAllPatientOrder(false);
+                $("#txtMobileNo").setValue('');
+            }
+        });
+        $("#txtQID").keyup(function (e) {
+            if ($("#txtQID:focus") && (e.keyCode === 13)) {
+                isQID = true;
+                //GetAllClinicPatientOrder(false);
+                GetAllPatientOrder(false);
+                $("#txtQID").setValue('');
+            }
+        });
+        $("#txtMRN").keyup(function (e) {
+            if ($("#txtMRN:focus") && (e.keyCode === 13)) {
+                isMRN = true;
+                //GetAllClinicPatientOrder(false);
+                GetAllPatientOrder(false);
+                $("#txtMRN").setValue('');
+            }
+        });
+        $("#txtVisitNo").keyup(function (e) {
+            if ($("#txtVisitNo:focus") && (e.keyCode === 13)) {
+                isVisitNo = true;
+                //GetAllClinicPatientOrder(false);
+                GetAllPatientOrder(false);
+                $("#txtVisitNo").setValue('');
+            }
+        });
+
+    });
+
+    function GetAllPatientOrder() {
+        GetAll_labClinicPatientOrder(true);
+        GetAllClinicPatientOrder(true);
+        GetAllIPDPatientQueuee(true);
+    }
+
+    $('.datepickker').datetimepicker({
+        timepicker: false,
+        format: 'm/d/Y'
+    });
+
+    function GetAll_labClinicPatientOrder(cbDate) {
+        var department = shortName;
+        var toDate = "";
+        var fromDate = "";
+            toDate = $("#dpkToDate").getValue();
+            fromDate = $("#dpkFromDate").getValue();
+            var orderNo = $("#txtOrderNo").getValue();
+            var mobNo = $("#txtMobileNo").getValue();
+            var nIDNo = $("#txtQID").getValue();
+            var mrnNo = $("#txtMRN").getValue();
+        var category = "$";
+        if (isOrderNo == true && orderNo != "") {
+            toDate = "";
+            fromDate = "";
+            cbDate = false;
+            isOrderNo = false;
+        }
+        else if (isOrderNo == true && orderNo == "") {
+            toDate = $("#dpkToDate").getValue();
+            fromDate = $("#dpkFromDate").getValue();
+            cbDate = true;
+            isOrderNo = false;
+        }
+        else if (isMobile == true && mobNo != "") {
+            toDate = "";
+            fromDate = "";
+            cbDate = false;
+            isMobile = false;
+        }
+        else if (isMobile == true && mobNo == "") {
+            toDate = $("#dpkToDate").getValue();
+            fromDate = $("#dpkFromDate").getValue();
+            cbDate = true;
+            isMobile = false;
+        }
+        else if (isNIDNo == true && nIDNo != "") {
+            toDate = "";
+            fromDate = "";
+            cbDate = false;
+            isNIDNo = false;
+        }
+        else if (isNIDNo == true && nIDNo == "") {
+            toDate = $("#dpkToDate").getValue();
+            fromDate = $("#dpkFromDate").getValue();
+            cbDate = true;
+            isNIDNo = false;
+        }
+        else if (isMRNNo == true && mrnNo != "") {
+            toDate = "";
+            fromDate = "";
+            cbDate = false;
+            isMRNNo = false;
+        }
+        else if (isMRNNo == true && mrnNo == "") {
+            toDate = $("#dpkToDate").getValue();
+            fromDate = $("#dpkFromDate").getValue();
+            cbDate = true;
+            isMRNNo = false;
+        }
+        else {
+            if (cbDate == true) {
+                var counter = 0;
+                if (!$("#dpkToDate").validate(MSG_REQ)) counter++;
+                if (!$("#dpkFromDate").validate(MSG_REQ)) counter++;
+                if (counter > 0) {
+                    return;
+                }
+                toDate = $("#dpkToDate").getValue();
+                fromDate = $("#dpkFromDate").getValue();
+                if (new Date(fromDate) > new Date(toDate)) {
+                    ShowMessage('1', "Please correct the date");
+                    $("#dpkFromDate").focus();
+                    return;
+                }
+            }
+        }
+
+        var _url = '@Url.Action("GetAllClinicPatientOrder", "PatientOrderQueue", new { Area = "LIMS" })';
+        //var data = "{category:'" + category + "',orderNo:'" + orderNo + "',fromDate:'" + fromDate + "',toDate:'" + toDate + "',cbDate:'" + cbDate + "'}"
+        var _data = "{category:'" + category + "',department:'" + department + "',fromDate:'" + fromDate + "',toDate:'" +
+            toDate + "',cbDate:'" + cbDate + "',orderNo:'" + orderNo + "',mob:'" + mobNo + "', mrnNo: '" + mrnNo + "', nidNo:'" + nIDNo + "'}";
+        clearfield();
+        $.AjaxJsonRequest(_url, _data, function (msg) {
+            //var lstLabOrderInsuranceApprovedQueue = new Array();
+            if (msg != "") {
+                //lstLabOrderInsuranceApprovedQueue = $.parseJSON(msg)[0];
+                //lstLabOrder = $.parseJSON(msg)[0];
+                var result = $.parseJSON(msg)[0];
+                if (result != null) {
+                    lstLabOrder = lstLabOrder.concat(result);
+                }
+            }
+            if (lstLabOrder == null) {
+                lstLabOrder = new Array();
+            }
+            //if (lstLabOrderInsuranceApprovedQueue == null) {
+            //    lstLabOrderInsuranceApprovedQueue = new Array();
+            //}
+            //Fill_ClinicPatientOrderInsuranceQueue(lstLabOrderInsuranceApprovedQueue);
+
+            Fill_labClinicPatientOrder(lstLabOrder);
+            console.log("GetAll_labClinicPatientOrder", lstLabOrder);
+
+        });
+    }
+
+    function Fill_labClinicPatientOrder(lstLabOrder) {
+        try {
+            $("#tblCashReject").dataTable({
+                "bDestroy": true,
+                "bProcessing": true,
+                "bFilter": true,
+                "aaData": lstLabOrder,
+                "deferRender": true,
+                "destroy": true,
+                "paging": false,
+                "scroller": true,
+                "aoColumns": [
+                    { "sTitle": "MRN(File No.)", "mData": "PatientNo" },
+                    { "sTitle": "Patient Name", "mData": "PatientName" },
+                    { "sTitle": "Age/Gender", "mData": "Age" },
+                    { "sTitle": "Mobile No", "mData": "Mobile" },
+                    {
+                        "sTitle": "Encounter",
+                        "mRender": function (data, type, row) {
+                            return row.PatientOrderNo && row.PatientOrderNo !== ""
+                                ? row.PatientOrderNo
+                                : row.IPNo;
+                        }
+                    },
+                    { "sTitle": "Bill Category", "mData": "BillCategoryName" },
+                    { "sTitle": "Test Names", "mData": "ServiceText" },
+                    { "sTitle": "Ordered By", "mData": "ComponentName" },
+                    {
+                        "sTitle": "Order Date",
+                        "mRender": function (data, type, row) {
+                            return row.PatientOrderOn && row.PatientOrderOn !== ""
+                                ? row.PatientOrderOn
+                                : row.AdmitDate;
+                        }
+                    },
+                    { "sTitle": "Proceed", "mData": "Proceed" }
+                ]
+            });
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+    function GetAllIPDPatientQueuee(cbDate) {
+      var department = "PATH";
+      var toDate = "";
+      var fromDate = "";
+          toDate = $("#dpkToDate").getValue();
+          fromDate = $("#dpkFromDate").getValue();
+          var orderNo = $("#txtOrderNo").getValue();
+      var category = "$";
+      if (isOrderNo == true && orderNo != "") {
+          toDate = "";
+          fromDate = "";
+          cbDate = false;
+          isOrderNo = false;
+
+      }
+      else if (isOrderNo == true && orderNo == "") {
+          toDate = $("#dpkToDate").getValue();
+          fromDate = $("#dpkFromDate").getValue();
+          cbDate = true;
+          isOrderNo = false;
+
+      }
+      else {
+          if (cbDate == true) {
+              var counter = 0;
+              if (!$("#dpkToDate").validate(MSG_REQ)) counter++;
+              if (!$("#dpkFromDate").validate(MSG_REQ)) counter++;
+              if (counter > 0) {
+                  return;
+              }
+              toDate = $("#dpkToDate").getValue();
+              fromDate = $("#dpkFromDate").getValue();
+              if (new Date(fromDate) > new Date(toDate)) {
+                  ShowMessage('1', "Please correct the date");
+                  $("#dpkFromDate").focus();
+                  return;
+              }
+          }
+      }
+
+      var _url = '@Url.Action("GetAllIPDPatient", "PatientOrderQueue", new { Area = "LIMS" })';
+      //var data = "{category:'" + category + "',orderNo:'" + orderNo + "',fromDate:'" + fromDate + "',toDate:'" + toDate + "',cbDate:'" + cbDate + "'}"
+      var _data = "{category:'" + category + "',department:'" + department + "',fromDate:'" + fromDate + "',toDate:'" + toDate + "',cbDate:'" + cbDate + "',orderNo:'" + orderNo + "'}";
+      clearfield();
+      $.AjaxJsonRequest(_url, _data, function (msg) {
+
+          var lstLabOrderQueue = new Array();
+          if (msg != "") {
+              //lstLabOrder = $.parseJSON(msg)[0];
+              var result = $.parseJSON(msg)[0];
+              if (result != null) {
+                  lstLabOrder = lstLabOrder.concat(result);
+              }
+          }
+          if (lstLabOrder == null) {
+              lstLabOrder = new Array();
+          }
+          Fill_labClinicPatientOrder(lstLabOrder);
+          console.log("GetAllIPDPatientQueuee",lstLabOrder);
+          //EncounterNo
+      });
+  }
+  function Fill_IPD_Patient(lstLabOrder) {
+      try {
+
+          $("#tblIPDPatient").dataTable({
+              "bDestroy": true,
+              "bProcessing": true,
+              "bFilter": true,
+              "aaData": lstLabOrder,
+              "deferRender": true,
+              "destroy": true,
+              //"info": false,
+              "paging": false,
+              //"scrollY": 800,
+              "scroller": true,
+              "aoColumns": [
+                  { "mData": "PatientNo" },
+                  { "mData": "PatientName" },
+                  { "mData": "Age" },
+                  { "mData": "Mobile1" },
+                  { "mData": "IPNo" },
+                  { "mData": "Ward" },
+                  { "mData": "Consultant" },
+                  { "mData": "AdmitDate" },
+
+                  //{ "sTitle": "Department", "mData": "ComponentName" },
+
+                  { "sTitle": "Proceed", "mData": "Proceed" }
+              ]
+          });
+
+      } catch (e) {
+          console.log(e.message);
+      }
+  }
+
+    function GetAllClinicPatientOrder(cbDate) {
+    var department = shortName;
+    var toDate = "";
+    var fromDate = "";
+        toDate = $("#dpkToDate").getValue();
+        fromDate = $("#dpkFromDate").getValue();
+        var orderNo = $("#txtOrderNo").getValue();
+        var MobileNo = $("#txtMobileNo").getValue();
+        var QID = $("#txtQID").getValue();
+        var MRN = $("#txtMRN").getValue();
+        var VisitNo = $("#txtVisitNo").getValue();
+    var category = "$";
+    if (isOrderNo == true && orderNo != "") {
+        toDate = "";
+        fromDate = "";
+        cbDate = false;
+        isOrderNo = false;
+
+    }
+    else if (isOrderNo == true && orderNo == "") {
+        toDate = $("#dpkToDate").getValue();
+        fromDate = $("#dpkFromDate").getValue();
+        cbDate = true;
+        isOrderNo = false;
+
+    }
+    else if (isMobile == true && MobileNo != "") {
+        toDate = "";
+        fromDate = "";
+        cbDate = false;
+        isMobile = false;
+
+    }
+    else if (isMobile == true && MobileNo == "") {
+        toDate = $("#dpkToDate").getValue();
+        fromDate = $("#dpkFromDate").getValue();
+        cbDate = true;
+        isMobile = false;
+
+    }
+    else if (isQID == true && QID != "") {
+        toDate = "";
+        fromDate = "";
+        cbDate = false;
+        isQID = false;
+
+    }
+    else if (isQID == true && QID == "") {
+        toDate = $("#dpkToDate").getValue();
+        fromDate = $("#dpkFromDate").getValue();
+        cbDate = true;
+        isQID = false;
+
+    }
+    else if (isMRN == true && MRN != "") {
+        toDate = "";
+        fromDate = "";
+        cbDate = false;
+        isMRN = false;
+
+    }
+    else if (isMRN == true && MRN == "") {
+        toDate = $("#dpkToDate").getValue();
+        fromDate = $("#dpkFromDate").getValue();
+        cbDate = true;
+        isMRN = false;
+
+    }
+
+    else if (isVisitNo == true && VisitNo != "") {
+        toDate = "";
+        fromDate = "";
+        cbDate = false;
+        isVisitNo = false;
+
+    }
+    else if (isVisitNo == true && VisitNo == "") {
+        toDate = $("#dpkToDate").getValue();
+        fromDate = $("#dpkFromDate").getValue();
+        cbDate = true;
+        isVisitNo = false;
+
+    }
+
+    else {
+        if (cbDate == true) {
+            var counter = 0;
+            if (!$("#dpkToDate").validate(MSG_REQ)) counter++;
+            if (!$("#dpkFromDate").validate(MSG_REQ)) counter++;
+            if (counter > 0) {
+                return;
+            }
+            toDate = $("#dpkToDate").getValue();
+            fromDate = $("#dpkFromDate").getValue();
+            if (new Date(fromDate) > new Date(toDate)) {
+                ShowMessage('1', "Please correct the date");
+                $("#dpkFromDate").focus();
+                return;
+            }
+        }
+    }
+
+    var _url = '@Url.Action("GetAllClinicPatientOrder", "ProcedureInvoice")';
+        //var data = "{category:'" + category + "',orderNo:'" + orderNo + "',fromDate:'" + fromDate + "',toDate:'" + toDate + "',cbDate:'" + cbDate + "'}"
+        var _data = "{category:'" + category + "',department:'" + department + "',fromDate:'" + fromDate + "',toDate:'" + toDate + "',cbDate:'" + cbDate + "',orderNo:'" + orderNo + "',MobileNo:'" + MobileNo + "',QID:'" + QID + "',MRN:'" + MRN +"',VisitNo:'"+VisitNo+"'} ";
+    clearfield();
+    $.AjaxJsonRequest(_url, _data, function (msg) {
+        var lstLabOrderInsuranceApprove = new Array();
+        var lstLabOrder = new Array();
+        var lstProcedurePatientInvoice = new Array();
+        debugger
+        if (msg != "") {
+            lstLabOrder = $.parseJSON(msg)[0];
+            lstProcedurePatientInvoice = $.parseJSON(msg)[1];
+        }
+        if (lstLabOrder == null) {
+            lstLabOrder = new Array();
+        }
+        if (lstProcedurePatientInvoice == null) {
+            lstProcedurePatientInvoice = new Array();
+        }
+        Fill_ClinicPatientOrder(lstLabOrder);
+        Fill_ClinicPatientInvoice(lstProcedurePatientInvoice);
+    });
+}
+
+
+
+
+    function Fill_ClinicPatientOrder(lstLabOrder) {
+        try {
+
+            $("#tblInsuranceApproved").dataTable({
+                "bDestroy": true,
+                "bProcessing": true,
+                "bFilter": true,
+                "aaData": lstLabOrder,
+                "deferRender": true,
+                "destroy": true,
+                //"info": false,
+                "paging": false,
+                //"scrollY": 800,
+                "scroller": true,
+                //"createdRow": function (row, data, index) {
+                //    // Change background color based on InsuranceStatus
+                //    if (data.InsuranceStatus === "Fully Approved") {
+                //        $(row).find("td:eq(8)").css('background-color', 'lightgreen'); // Light green
+                //    } else if (data.InsuranceStatus === "Partially Approved") {
+                //        $(row).find("td:eq(8)").css('background-color', '#ffecb3'); // Light yellow
+                //    } else if (data.InsuranceStatus === "Fully Rejected") {
+                //        $(row).find("td:eq(8)").css('background-color', 'lightcoral'); //
+                //    }
+                //    else if (data.InsuranceStatus === "Partially Approved with Inquiry") {
+                //        $(row).find("td:eq(8)").css('background-color', 'orange'); // orange
+                //    }
+                //    else if (data.InsuranceStatus === "Fully Cancelled") {
+                //        $(row).find("td:eq(8)").css('background-color', 'teal'); // teal
+                //    }
+                //    else if (data.InsuranceStatus === "Not Cover") {
+                //        $(row).find("td:eq(8)").css('background-color', 'lightgray'); // light gray
+                //    }
+                //},
+                "aoColumns": [
+                    { "sTitle": "MRN (File No.)", "mData": "PatientNo" },
+                    { "sTitle": "Patient Name", "mData": "PatientName" },
+                    { "sTitle": " Patient Age", "mData": "Age" },
+                    { "sTitle": " Mobile No", "mData": "Mobile" },
+                    //{ "sTitle": "Visit No", "mData": "PatientOrderNo" },
+                    { "sTitle": " Procedure", "mData": "ProcedureName" },
+                    { "sTitle": " Bill Category", "mData": "BillCategoryName" },
+                    //{ "sTitle": " Insurance Company", "mData": "InsuranceCompanyName" },
+                    { "sTitle": "OPD / Doctor", "mData": "ComponentName" },
+                    { "sTitle": "Date", "mData": "PatientOrderOn" },
+                    //{ "sTitle": "Status", "mData": "InsuranceStatus" },
+
+
+                    //{
+                    //    "sTitle": "Status File",
+                    //    "mRender": function (data, type, row) {
+                    //        if (row.InsuranceStatusFilePath && row.InsuranceStatusFilePath !== "") {
+                    //            return "<a href='" + row.InsuranceStatusFilePath + "' target='_blank'>" +
+                    //                "<img src='/Images/Icons/view.png' style='width:30px; height:30px; margin-left: 21%;' />" +
+                    //                "</a>";
+                    //        } else {
+                    //            return ""; // Return an empty string for empty file path
+                    //        }
+                    //    }
+                    //},
+                    //{ "sTitle": "Ext.Ref.No", "mData": "PartyRefNo" },
+                    //{ "sTitle": "Patient Mobile", "mData": "Mobile" },
+                    //{ "sTitle": "Patient Test", "mData": "TestName" },
+                    { "sTitle": "Proceed", "mData": "Proceed" }
+                ]
+            });
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+     function PrintPatientSlip(patientOrderId, slipPrint) {
+        var rptURL = '';
+
+         var rptURL = '@Url.Content("~/Lims/Report/PrintDentalPatientInvoice")?Id=' + patientOrderId + '&TransFlag=ORDER';
+
+         window.open(rptURL, "_blank");
+            @*rptURL = '@Url.Content("~/OPD/Report/PrintOPDPatientSlip")?Id=' + patientOrderId;
+            window.open(rptURL, '_blank');*@
+
+
+    }
+
+    function Fill_ClinicPatientInvoice(lstProcedurePatientInvoice) {
+        try {
+            $("#tblPatientInvoice").dataTable({
+                "bDestroy": true,
+                "bProcessing": true,
+                "bFilter": true,
+                "aaData": lstProcedurePatientInvoice,
+                "deferRender": true,
+                "destroy": true,
+                //"info": false,
+                "paging": false,
+                //"scrollY": 800,
+                "scroller": true,
+                "aoColumns": [
+                    { "mData": "MRN" },
+                    {  "mData": "PatientName" },
+                    {  "mData": "Age" },
+                    { "mData": "Mobile" },
+                    //{ "mData": "PatientOrderNo" },
+                    { "sTitle": " Procedure", "mData": "ProcedureName" },
+                    { "sTitle": " Visit No", "mData": "PatientOrderNo" },
+                    { "mData": "BillCategoryName" },
+                    { "mData": "Payment" },
+                    { "mData": "ComponentName" },
+                    { "mData": "PatientOrderOn" },
+                    { "mData": "Print" },
+                    { "mData": "Edit" }
+                ]
+            });
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+    function clearfield() {
+        $("#txtOrderNo").val("");
+    }
+
+
+</script>

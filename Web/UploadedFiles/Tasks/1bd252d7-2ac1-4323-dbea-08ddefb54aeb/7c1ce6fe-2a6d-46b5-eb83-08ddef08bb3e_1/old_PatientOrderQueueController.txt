@@ -1,0 +1,797 @@
+using Semantech.BAL;
+using Semantech.BAL.Repository.ERP;
+using Semantech.BO.ERP.ADO;
+using Semantech.BO.GlobalInfo;
+using Semantechs.MVC.Helper.Utility;
+using Semantechs.MVC.UI.Controllers;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Web.Mvc;
+using System.Web.Script.Serialization;
+using System.Linq;
+using Semantech.BAL.Code;
+
+namespace Semantechs.MVC.UI.Areas.LIMS.Controllers
+{
+    public class PatientOrderQueueController : BaseController
+    {
+        //
+        // GET: /LIMS/PatientOrderQueue/
+        public ActionResult Index()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+        }
+        public ActionResult List()
+        {
+            try
+            {
+                ViewBag.RouteType = "";
+                GetAllLov();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return View();
+        }
+        public ActionResult RIMSList()
+        {
+            try
+            {
+                ViewBag.RouteType = "RADI";
+                GetAllLov();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return View("List");
+        }
+        public ActionResult LIMSList()
+        {
+            try
+            {
+                ViewBag.RouteType = "PATH";
+                GetAllLov();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return View("List");
+        }
+        public ActionResult OPDList()
+        {
+            try
+            {
+                ViewBag.RouteType = "OPD";
+                GetAllLov();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return View("List");
+        }
+        private void GetAllLov()
+        {
+            try
+            {
+                ViewBag.ddl_Location = new LocationRepository().GetAllForUserDataLocation(false);
+                if (ViewBag.ddl_Location == null)
+                {
+                    ViewBag.ddl_Location = new SelectListItem();
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+        public ActionResult PatientInquiryList()
+        {
+            try
+            {
+                ViewBag.Action = "PatientInquiryList";
+
+                TempData["Request"] = "PatientInquiryList";
+                TempData.Keep("Request");
+                TempData.Keep();
+
+                return View("List");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public ActionResult OPDPatientPrescribeList()
+        {
+            try
+            {
+                ViewBag.Action = "OPDPatientPrescribeList";
+                TempData["Request"] = "OPDPatientPrescribeList";
+                TempData.Keep("Request");
+                TempData.Keep();
+                return View("List");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+        public string GetAllClinicPatientOrder(string department, string category, string mob, string orderNo, string fromDate, string toDate, string cbDate, string mrnNo, string nidNo)
+        {
+            var listFinal = new List<object>();
+            var orderQueueInsuranceApprovedList = (object)null;
+            var orderQueueList = (object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                var id = new DocMovementRepository().GetByShortName("CLNPAP", false).DocMovementId;
+                lpm.Add(new ParameterList("DocMovementId", id));
+                if (department != "")
+                    lpm.Add(new ParameterList("DepartmentShortName", department));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                if (category != "$")
+                {
+                    lpm.Add(new ParameterList("PatientCategoryProfileId", long.Parse(category)));
+                }
+                if (orderNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+                }
+                if (mob != "")
+                {
+                    lpm.Add(new ParameterList("Mobile", mob));
+                }
+                if (mrnNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientNo", mrnNo));
+                }
+                if (nidNo != "")
+                {
+                    lpm.Add(new ParameterList("CNIC", nidNo));
+                }
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+
+
+                }
+
+                DataTable dtQueue = null;
+                 dtQueue = CommonRepository.GetDataTable("OPDPatientPrescribeFORDIMS", "[hms].[procGetPatientOrderForLIMS]", lpm);
+                if (dtQueue != null)
+                {
+                    orderQueueList = (from item in dtQueue.AsEnumerable()
+                                      select new
+                                      {
+                                          LabOrderId = item.Field<long>("PatientOrderId"),
+                                          PatientOrderNo = item.Field<string>("PatientOrderNo"),
+                                          PatientOrderOn = item.Field<DateTime>("PatientOrderOn").ToString("dd/MM/yyyy"),
+                                          PatientNo = item.Field<string>("PatientNo"),
+                                          PatientId = item.Field<long>("PatientId"),
+                                          PatientName = item.Field<string>("PatientName").ToString(),
+                                          Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                          Mobile = item.Field<string>("Mobile1"),
+                                          ServiceText = item.Field<string>("Tests"),
+                                          TotalAmount = item.Field<long>("TotalAmount"),
+                                          TotalDiscount = item.Field<decimal>("TotalDiscount"),
+                                          RefPartyName = item.Field<string>("RefPartyName"),
+                                          RefName = item.Field<string>("RefName"),
+                                          ServiceOrderRefNo = item.Field<string>("ServiceOrderRefNo"),
+                                          PartyRefNo = item.Field<string>("PartyRefNo"),
+                                          ComponentName = item.Field<string>("ComponentName"),
+                                          InsuranceCompanyName = item.Field<string>("InsuranceCompanyName"),
+                                          InsuranceStatus = item.Field<string>("InsuranceStatus"),
+                                          InsuranceStatusFilePath = item.Field<string>("InsuranceStatusFilePath"),
+                                          BillCategoryName = item.Field<string>("BillCategoryName"),
+                                          Proceed = (item.Field<string>("BillCategoryName") != "Insurance" ? "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedClinic?Id=" + item.Field<long>("PatientOrderId") + "&&ShortName=" + department + "'></a>" : "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedInsurance?Id=" + item.Field<long>("PatientOrderId") + "&&ShortName=" + department + "'></a>"),
+
+                                     }).ToList();
+                }
+                listFinal.Add(orderQueueList);
+            }
+            catch (Exception ex)
+            {
+                return string.Empty;
+            }
+
+            return objJSS.Serialize(listFinal);
+
+        }
+        public string GetAllPatientOrder(string department, string category, string orderNo, string fromDate, string toDate, string cbDate)
+        {
+            var listFinal = new List<object>();
+            var orderQueueList = (object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                var id = new DocMovementRepository().GetByShortName("OPDPAP", false).DocMovementId;
+                lpm.Add(new ParameterList("DocMovementId", id));
+                if (department != "")
+                    lpm.Add(new ParameterList("DepartmentShortName", department));
+                //if (fromDate == null && fromDate == "" || toDate == null && toDate == "" && orderNo=="")
+                //lpm.Add(new ParameterList("CreatedOn", DateTime.Now));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                if (category != "$")
+                {
+                    lpm.Add(new ParameterList("PatientCategoryProfileId", long.Parse(category)));
+                }
+                if (orderNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+                }
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+
+
+                }
+
+                DataTable dtQueue = null;
+
+                //lpm.Clear();
+                dtQueue = CommonRepository.GetDataTable("OPDPatientPrescribeFORDIMS", "[hms].[procGetPatientOrderForLIMS]", lpm);
+
+                if (dtQueue != null)
+                {
+                    orderQueueList = (from item in dtQueue.AsEnumerable()
+                                      select new
+                                      {
+                                          LabOrderId = item.Field<long>("PatientOrderId"),
+                                          PatientOrderNo = item.Field<string>("PatientOrderNo"),
+                                          PatientOrderOn = item.Field<DateTime>("PatientOrderOn").ToString("dd/MM/yyyy"),
+                                          PatientNo = item.Field<string>("PatientNo"),
+                                          //InvoiceNo = item.Field<string>("InvoiceNo"),
+                                          PatientId = item.Field<long>("PatientId"),
+                                          PatientName = item.Field<string>("PatientName").ToString(),
+                                          Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                          Mobile = item.Field<string>("Mobile1"),
+                                          TestName = item.Field<string>("Tests"),
+                                          TotalAmount = item.Field<long>("TotalAmount"),
+                                          TotalDiscount = item.Field<decimal>("TotalDiscount"),
+                                          RefPartyName = item.Field<string>("RefPartyName"),
+                                          RefName = item.Field<string>("RefName"),
+                                          ServiceOrderRefNo = item.Field<string>("ServiceOrderRefNo"),
+                                          PartyRefNo = item.Field<string>("PartyRefNo"),
+                                          ComponentName = item.Field<string>("ComponentName"),
+                                          InsuranceCompanyName = item.Field<string>("InsuranceCompanyName"),
+                                          BillCategoryName = item.Field<string>("BillCategoryName"),
+
+                                          Proceed = "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedOPD?Id=" + item.Field<long>("PatientOrderId") + "&&ShortName=" + department + "'></a>",
+                                      }).ToList();
+                }
+                listFinal.Add(orderQueueList);
+            }
+            catch (Exception ex)
+            {
+                return string.Empty;
+            }
+
+            //return Json(res, JsonRequestBehavior.AllowGet);
+
+            return objJSS.Serialize(listFinal);
+
+        }
+        public string GetAllRecord(string department, string category, string orderNo, string fromDate, string toDate, string cbDate)
+        {
+            var listFinal = new List<object>();
+            var orderList = (object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                var id = new DocMovementRepository().GetByShortName(DocumentMovementMode.LABPOD, false).DocMovementId;
+                lpm.Add(new ParameterList("DocMovementId", id));
+                if (department != "")
+                    lpm.Add(new ParameterList("DepartmentShortName", department));
+                //if (fromDate == null && fromDate == "" || toDate == null && toDate == "" && orderNo=="")
+                //lpm.Add(new ParameterList("CreatedOn", DateTime.Now));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                if (category != "$")
+                {
+                    lpm.Add(new ParameterList("PatientCategoryProfileId", long.Parse(category)));
+                }
+                if (orderNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+                }
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+
+
+                }
+
+
+                DataTable dt = null;
+
+                dt = CommonRepository.GetDataTable("LabOrderListFORDIMS", "[hms].[procGetPatientOrderForLIMS]", lpm);
+                if (dt != null)
+                {
+                    orderList = (from item in dt.AsEnumerable()
+                                 select new
+                                 {
+                                     LabOrderId = item.Field<long>("PatientOrderId"),
+                                     PatientOrderNo = item.Field<string>("PatientOrderNo"),
+                                     PatientOrderOn = item.Field<DateTime>("PatientOrderOn").ToString("dd/MM/yyyy"),
+                                     PatientNo = item.Field<string>("PatientNo"),
+                                     //InvoiceNo = item.Field<string>("InvoiceNo"),
+                                     PatientId = item.Field<long>("PatientId"),
+                                     PatientName = item.Field<string>("PatientName").ToString(),
+                                     Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                     Mobile = item.Field<string>("Mobile1"),
+                                     RefPartyName = item.Field<string>("RefPartyName"),
+                                     RefName = item.Field<string>("RefName"),
+                                     ServiceOrderRefNo = item.Field<string>("ServiceOrderRefNo"),
+                                     PartyRefNo = item.Field<string>("PartyRefNo"),
+                                     Edit = "<a class='EditIcon' href='/LIMS/LabOrder/Edit/" + item.Field<long>("PatientOrderId") + "'></a>",
+                                     Cancel = item.Field<decimal?>("RefundBalance") > 0 ? "" : "<a class='CancelIcon' href='#' id='" + item.Field<long>("PatientOrderId") + "' onclick=DeletePopUp('LabOrder','Cancel',this.id,'tblOrder');></a>",
+                                 }).ToList();
+
+                }
+
+                listFinal.Add(orderList);
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            //return Json(res, JsonRequestBehavior.AllowGet);
+
+            return objJSS.Serialize(listFinal);
+
+        }
+        public string GetAllOrder()
+        {
+            var orderList = (Object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                DataTable dt = CommonRepository.GetDataTable<PatientPrescribe>(FilterMode.LIST, null, null, true);
+
+                if (dt != null)
+                {
+                    orderList = (from item in dt.AsEnumerable()
+                                 select new
+                                 {
+                                     PatientId = item.Field<long>("EHR No"),
+                                     PatientName = item.Field<string>("Patient Name").ToString(),
+                                     Gender = item.Field<string>("Gender").ToString(),
+                                     Age = item.Field<int>("Age"),
+                                     Proceed = "<a class='ProceedIcon' href='/LIMS/LabOrder/IndexNew?PatientPrescribeId=" + item.Field<long>("PatientPrescribeId") + "&PatientId=" + item.Field<long>("EHR No") + "'></a>",
+                                     //Proceed = "<a class='ProceedIcon'  href='/LIMS/LabOrder/IndexNew?PatientPrescribeId=" + item.Field<long>("PatientPrescribeId") + "&PatientId=" + item.Field<long>("EHR No") + "'></a>",
+
+                                 }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                //return string.Empty;
+                throw ex;
+            }
+
+            return objJSS.Serialize(orderList);
+        }
+
+
+        public string GetAllPatientInquiryOrder()
+        {
+            var orderList = (Object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                int docMovId = new DocMovementRepository().GetByShortName(DocumentMovementMode.LABPIN.ToString(), false).DocMovementId;
+
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                lpm.Add(new ParameterList("DocMovementId", docMovId));
+
+                DataTable dt = CommonRepository.GetDataTable<PatientInquiry>("PatientOrderLIST", lpm, null, true);
+
+                if (dt != null)
+                {
+                    orderList = (from item in dt.AsEnumerable()
+                                 select new
+                                 {
+                                     PatientId = item.Field<long>("EHR No"),
+                                     PatientName = item.Field<string>("Patient Name").ToString(),
+                                     Gender = item.Field<string>("Gender").ToString(),
+                                     Age = item.Field<int>("Age"),
+                                     Proceed = "<a class='ProceedIcon' href='/LIMS/LabServiceOrder/IndexPatientInquiry?PatientInquiryId=" + item.Field<long>("PatientInquiryId") + "&PatientId=" + item.Field<long>("EHR No") + "&PersonId=" + item.Field<long>("PersonId") + "&PartyLocationId=" + item.Field<long>("PartyLocationId") + "'></a>",
+                                 }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                //return string.Empty;
+                throw ex;
+            }
+            return objJSS.Serialize(orderList);
+        }
+        public string GetAllPatientRequsistion(string department, string category, string orderNo, string fromDate, string toDate, string cbDate, string MobileNo)
+        {
+            var orderList = (object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                var id = new DocMovementRepository().GetByShortName("OTRPRQ", false).DocMovementId;
+                lpm.Add(new ParameterList("DocMovementId", id));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                if (orderNo != "")
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+                }
+                if (!string.IsNullOrEmpty(MobileNo))
+                    lpm.Add(new ParameterList("Mobile", MobileNo));
+
+                DataTable dt = null;
+                dt = CommonRepository.GetDataTable<PatientRequisition>("OutstandingForLO", lpm);
+
+                string rolePrefix = "";
+                if (BaseRepository.CheckLoginUser != null && BaseRepository.CheckLoginUser.Role != null)
+                    rolePrefix = BaseRepository.CheckLoginUser.Role.RolePrefix;
+
+                if (dt != null)
+                {
+                    int count = 0;
+                    orderList = (from item in dt.AsEnumerable()
+                                 select new
+                                 {
+                                     SrNo = ++count,
+                                     PatientRequisitionId = item.Field<long>("PatientRequisitionId"),
+                                     EMRNo = item.Field<string>("EMRNo"),
+                                     RequisitionOn = item.Field<DateTime>("RequisitionOn").ToString("dd/MM/yyyy"),
+                                     PatientName = item.Field<string>("PatientName").ToString(),
+                                     Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("Gender").ToString(),
+                                     Mobile = item.Field<string>("Mobile1"),
+                                     RefConsultantName = item.Field<string>("RefConsultantName"),
+
+                                     //Print = "<a class='PrintIcon' href='/LIMS/Report/PrintPatientInvoice?Id=" + item.Field<long>("PatientOrderId") + "' target='_blank'></a>",
+
+                                     Proceed = "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedFromOPD/" + item.Field<long>("PatientRequisitionId") + "'></a>",
+                                     //Delete = "<a class='DeleteIcon' href='#' id='" + item.Field<long>("PatientRequisitionId") + "' onclick=DeletePopUp('LabTestRequisition','Delete',this.id,'tbl');></a>",
+
+                                 }).ToList();
+
+                }
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+            return objJSS.Serialize(orderList);
+        }
+        public string GetAllIPDPatient(string department, string category, string orderNo, string fromDate, string toDate, string cbDate)
+        {
+            var listFinal = new List<object>();
+            var orderQueueList = (object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                //var id = new DocMovementRepository().GetByShortName("IPDPAP", false).DocMovementId;
+                //lpm.Add(new ParameterList("DocMovementId", id));
+                if (department != "")
+                    lpm.Add(new ParameterList("DepartmentShortName", department));
+                //if (fromDate == null && fromDate == "" || toDate == null && toDate == "" && orderNo=="")
+                //lpm.Add(new ParameterList("CreatedOn", DateTime.Now));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                if (category != "$")
+                {
+                    lpm.Add(new ParameterList("PatientCategoryProfileId", long.Parse(category)));
+                }
+                if (orderNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+                }
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+
+
+                }
+
+                DataTable dtQueue = null;
+
+                //lpm.Clear();
+                dtQueue = CommonRepository.GetDataTable("IPDPatientPrescribeFORDIMS", "[hms].[procGetPatientOrderForLIMS]", lpm);
+
+                if (dtQueue != null)
+                {
+                    orderQueueList = (from item in dtQueue.AsEnumerable()
+                                      select new
+                                      {
+                                          PatientAdmitId = item.Field<long>("PatientAdmitId"),
+                                          IPNo = item.Field<string>("IPNo"),
+                                          AdmitDate = item.Field<DateTime>("AdmitDate").ToString("dd/MM/yyyy"),
+                                          PatientNo = item.Field<string>("PatientNo"),
+                                          PatientId = item.Field<long>("PatientId"),
+                                          PatientName = item.Field<string>("PatientName"),
+                                          ComponentName = item.Field<string>("ComponentName"),
+                                          Consultant = item.Field<string>("Consultant"),
+                                          Mobile1 = item.Field<string>("Mobile1"),
+                                          Ward = item.Field<string>("Ward"),
+                                          Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                          Mobile = item.Field<string>("Mobile1"),
+                                          RefName = item.Field<string>("RefName"),
+                                          Proceed = "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedFromPA?Id=" + item.Field<long>("PatientAdmitId") + "&&ShortName=" + department + "'></a>",
+                                          //Proceed = "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedClinic?Id=" + item.Field<long>("PatientOrderId") + "&&ShortName=" + department + "'></a>",
+                                      }).ToList();
+                }
+                listFinal.Add(orderQueueList);
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            //return Json(res, JsonRequestBehavior.AllowGet);
+
+            return objJSS.Serialize(listFinal);
+
+        }
+        public string GetAllIPDPatientRequisitionQueue(string department, string category, string orderNo, string fromDate, string toDate, string cbDate)
+        {
+            var listFinal = new List<object>();
+            var orderQueueList = (object)null;
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                //var id = new DocMovementRepository().GetByShortName("IPDPAP", false).DocMovementId;
+                //lpm.Add(new ParameterList("DocMovementId", id));
+                //if (department != "")
+                //    lpm.Add(new ParameterList("DepartmentShortName", department));
+                //if (fromDate == null && fromDate == "" || toDate == null && toDate == "" && orderNo=="")
+                //lpm.Add(new ParameterList("CreatedOn", DateTime.Now));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                if (category != "$")
+                {
+                    lpm.Add(new ParameterList("PatientCategoryProfileId", long.Parse(category)));
+                }
+                if (orderNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+                }
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+
+
+                }
+
+                DataTable dtQueue = null;
+
+                //lpm.Clear();
+                dtQueue = CommonRepository.GetDataTable("IPDPatientPrescribeFORREQUSITION", "[hms].[procGetPatientOrderForLIMS]", lpm);
+
+                if (dtQueue != null)
+                {
+                    orderQueueList = (from item in dtQueue.AsEnumerable()
+                                      select new
+                                      {
+                                          PatientAdmitId = item.Field<long>("PatientAdmitId"),
+                                          PatientRequisitionId = item.Field<long>("PatientRequisitionId"),
+                                          IPNo = item.Field<string>("IPNo"),
+                                          AdmitDate = item.Field<DateTime>("AdmitDate").ToString("dd/MM/yyyy"),
+                                          PatientNo = item.Field<string>("PatientNo"),
+                                          PatientId = item.Field<long>("PatientId"),
+                                          PatientName = item.Field<string>("PatientName"),
+                                          ComponentName = item.Field<string>("ComponentName"),
+                                          Consultant = item.Field<string>("Consultant"),
+                                          Mobile1 = item.Field<string>("Mobile1"),
+                                          Ward = item.Field<string>("Ward"),
+                                          Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                          Mobile = item.Field<string>("Mobile1"),
+                                          RefName = item.Field<string>("RefName"),
+                                          Proceed = "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedFromPA?Id=" + item.Field<long>("PatientAdmitId") + "&&PatientRequisitionId=" + item.Field<long>("PatientRequisitionId") + "'></a>",
+                                      }).ToList();
+                }
+                listFinal.Add(orderQueueList);
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            //return Json(res, JsonRequestBehavior.AllowGet);
+
+            return objJSS.Serialize(listFinal);
+
+        }
+        public string GetAllPatientAdmit(string fromDate, string toDate, string cbDate, string orderNo, string MobileNo, string PatientNo, string DepartmentComponentId, string WardId, string IpNo, string Department)
+        {
+            var lstPatAdmit = (object)null;
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
+            DataTable dt = null;
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+
+                if (orderNo != "")
+                    lpm.Add(new ParameterList("IPNo", orderNo));
+
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+                }
+                if (!string.IsNullOrEmpty(MobileNo))
+                    lpm.Add(new ParameterList("Mobile", MobileNo));
+                if (!string.IsNullOrEmpty(PatientNo))
+                    lpm.Add(new ParameterList("PatientNo", PatientNo));
+                if (BaseRepository.GetLocationSetting.IsRequiredIPDFilterOnLIMS)
+                {
+                    if (!string.IsNullOrEmpty(DepartmentComponentId))
+                        lpm.Add(new ParameterList("DepartmentComponentId", DepartmentComponentId));
+                    if (!string.IsNullOrEmpty(WardId))
+                        lpm.Add(new ParameterList("WardId", WardId));
+                    if (!string.IsNullOrEmpty(IpNo))
+                        lpm.Add(new ParameterList("IPNo", IpNo));
+                }
+
+                dt = new PatientAdmitRepository().GetAllPatientAdmitData(lpm);
+                if (dt != null)
+                {
+                    lstPatAdmit = (from item in dt.AsEnumerable()
+                                   select new
+                                   {
+                                       PatientAdmitId = item.Field<long>("PatientAdmitId"),
+                                       PatientId = item.Field<long>("PatientId"),
+                                       PatientName = item.Field<string>("PatientName"),
+                                       IPNo = item.Field<string>("IPNo"),
+                                       PatientNo = item.Field<string>("PatientNo"),
+                                       ComponentName = item.Field<string>("ComponentName"),
+                                       WardName = item.Field<string>("WardName"),
+                                       BedNo = item.Field<string>("BedNo"),
+                                       Mobile1 = item.Field<string>("Mobile1"),
+                                       Consultant = item.Field<string>("InternalConsultant"),
+                                       IsDischarge = item.Field<bool>("IsDischarge"),
+                                       AgeGender = (item.Field<DateTime?>("DOB") == null ? item.Field<string>("AgeGender") : item.Field<string>("PatientAge")) + " / " + item.Field<string>("Gender").ToString(),
+                                       AdmitDate = item.Field<DateTime>("AdmitDate"),
+                                       AdvanceAmount = item.Field<decimal>("AdvanceAmount"),
+                                       AdmissionFee = item.Field<decimal>("AdmissionFee"),
+                                       PatientOrderSetId = item.Field<long?>("PatientOrderSetId"),
+                                       Print = "<a href='#' onclick=\"OpenPrintPreview('/HMS/Report/PrintPatientAdmissionOrder?Id=" + item.Field<long>("PatientId") + "')\"><img src='/Images/Common/Printer.png' style='width:30px;height:30px;' /></a>",
+                                       Proceed = (item.Field<bool>("IsDischarge") == false ? "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedFromAdmissionQueue?Id=" + item.Field<long>("PatientAdmitId") + "&Department=" + Department + "'></a>" : ""),
+                                   }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                return objJSS.Serialize(new { lstPatAdmit, MessageText = ex.Message });
+            }
+            return objJSS.Serialize(new { lstPatAdmit, MessageText = "" });
+        }
+        public string GetAllPatientInquiry(string department, string category, string orderNo, string fromDate, string toDate, string cbDate, string MobileNo, string DepartmentComponentId, string WardId, string IpNo)
+        {
+            var listFinal = new List<object>();
+            var orderList = (object)null;
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+                var id = new DocMovementRepository().GetByShortName("LABPIN", false).DocMovementId;
+                lpm.Add(new ParameterList("DocMovementId", id));
+                if (department != "")
+                    lpm.Add(new ParameterList("DepartmentShortName", department));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+
+                if (category != "$")
+                    lpm.Add(new ParameterList("PatientCategoryProfileId", long.Parse(category)));
+                if (orderNo != "")
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+                }
+                if (!string.IsNullOrEmpty(MobileNo))
+                    lpm.Add(new ParameterList("Mobile", MobileNo));
+                DataTable dt = null;
+                dt = CommonRepository.GetDataTable("OutstandingFORInquiry", "[hms].[procGetPatientOrderForLIMS]", lpm);
+                if (dt != null)
+                {
+                    orderList = (from item in dt.AsEnumerable()
+                                 select new
+                                 {
+                                     PatientInquiryId = item.Field<long>("PatientInquiryId"),
+                                     PatientOrderOn = item.Field<DateTime>("PatientOrderOn").ToString("dd/MM/yyyy"),
+                                     PatientNo = item.Field<string>("PatientNo"),
+                                     PatientId = item.Field<long>("PatientId"),
+                                     PatientName = item.Field<string>("PatientName").ToString(),
+                                     Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                     Mobile = item.Field<string>("Mobile1"),
+                                     RefName = item.Field<string>("RefName"),
+                                     Proceed = "<a class='ProceedIcon' href='/LIMS/LabOrder/ProceedFromPI?Id=" + item.Field<long>("PatientInquiryId") + "&&ShortName=" + department + "'></a>",
+                                     //Edit = "<a class='EditIcon' href='/LIMS/PatientInquiry/Edit/" + item.Field<long>("PatientInquiryId") + "'></a>",
+                                     //Delete = "<a class='DeleteIcon' href='#' id='" + item.Field<long>("PatientInquiryId") + "' onclick=DeletePopUp('LIMS/PatientInquiry','Cancel',this.id,'tblOrder');></a>",
+                                     //Print = "<a class='PrintIcon' href='/LIMS/Report/PrintPatientInvoice?Id=" + item.Field<long>("PatientInquiryId") + "' target='_blank'></a>",
+                                 }).ToList().OrderByDescending(x => x.PatientInquiryId);
+
+                }
+                listFinal.Add(orderList);
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            //return Json(res, JsonRequestBehavior.AllowGet);
+
+            return objJSS.Serialize(listFinal);
+
+        }
+    }
+}

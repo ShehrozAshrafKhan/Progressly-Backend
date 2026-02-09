@@ -1,0 +1,2100 @@
+@model Semantech.BO.ERP.ADO.PatientInquiry
+@{
+    ViewBag.Title = "Patient Appointments";
+    Layout = "~/Views/Shared/_AdminLteLayout.cshtml";
+
+}
+<style>
+    .PaddingAdj {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+        padding-left: 0 !important;
+        padding-right: 10px !important;
+    }
+
+    .AgeAdj {
+        padding-left: 12px !important;
+        padding-right: 0 !important;
+    }
+
+    .ageSpaceAdj {
+        margin-left: -1.1% !important;
+    }
+
+    .rowAdj {
+        margin-left: 2px !important;
+    }
+
+    .tbl2 {
+        width: 87%;
+        max-height: 200px;
+        position: absolute;
+        z-index: 1005;
+        border: 2px solid #CCC;
+        opacity: 1;
+        background: white;
+        overflow: auto;
+    }
+
+        .tbl2 tr td {
+            text-align: left;
+            height: 30px;
+            padding: 2px 5px;
+            border-left: 1px solid #CCC;
+        }
+
+        .tbl2 tr th {
+            text-align: left;
+            height: 30px;
+            background: linear-gradient(to bottom, rgba(243,243,243,1) 0%,rgba(204,204,204,1) 100%);
+            border-left: 1px solid #CCC;
+            padding: 2px 5px;
+        }
+</style>
+<div class="container">
+    @using (Html.BeginForm("SavePatientInquiry", "PatientInquiry", FormMethod.Post, new { id = "frmPatientInquiry" }))
+    {
+        <div class="row" style="display:none">
+            <div>
+                <ol class="breadcrumb">
+                    @*<li class="active">
+                            <i style="font-size:20px;">Patient Inquiry</i>
+                        </li>*@
+                    <li><a id="liDashBoardUrl" href="#">Dashboard</a></li>
+                    <li><a id="liListUrl" href="#">List</a></li>
+                    <li class="active"> Patient Appointments</li>
+                </ol>
+            </div>
+        </div>
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-topheading">Patient Appointment </div>
+                <div class="panel-body" style="padding: 10px 10px 0px 10px;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="col-md-12">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                Patient Information
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="pull-right" style="margin-right: 15px;">Search Patient</label>
+                                            </div>
+                                            <div class="col-md-4" style="margin:-5px;">
+                                                <div>
+                                                    @Html.TextBox("txtSearchPatient", null, new { @id = "txtSearchPatient", @class = "form-control alnum", onkeyup = "PatientPopUp(event);return false;" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="panel-body">
+                                    <div class="col-md-12">
+                                        <div class="row" style="display:none">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <input id="rdbNewPatient" checked="checked" type="radio" name="rdbPatient" class="radio-inline" @*onclick="CheckNewPatient(this.checked)"*@ /><label for="rdbNewPatient"> New Patient</label>
+                                                    <input id="rdbOldPatient" type="radio" name="rdbPatient" class="radio-inline" @*onclick="CheckOldPatient(this.checked)"*@ /><label for="rdbOldPatient"> Old Patient</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>
+                                                        MRN (File No.)
+                                                    </label>
+                                                    @Html.TextBoxFor(model => model.Patient.PatientNo, new { id = "txtPatientNo", @class = "form-control numeric", onkeyup = "SearchPatientByMRN(event,this.value);" })
+                                                    @Html.TextBoxFor(model => model.PatientId, new { onkeyup = "SearchPatient(event,this.id)", disabled = "true", id = "txtPatientId", @class = "form-control numeric", style = "display:none;" })
+                                                    @Html.TextBoxFor(model => model.Person.PersonId, new { id = "txtPersonId", disabled = "true", @class = "form-control", style = "display:none;" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="req">Primary Mobile</label>
+                                                    @Html.TextBoxFor(model => model.Person.Mobile1, new { id = "txtMobileNo", @class = "form-control", onkeyup = "SearchPatientByMobileNo(event);" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label> Secondary Mobile</label>
+                                                    @Html.TextBoxFor(model => model.Person.Mobile2, new { id = "txtMobileNo2", @class = "form-control", onkeyup = "SearchPatientByMobileNo(event);" })
+                                                </div>
+                                            </div>
+                                          
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="req">Appointment Date</label>
+                                                    @Html.TextBoxFor(model => model.AppointmentDate, "{0:MM/dd/yyyy}", new { id = "dpkAppointmentDate", @class = "form-control date", onchange = "OnAppointmentDateChange()" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>National ID (QID)</label>
+                                                    @Html.TextBoxFor(model => model.Person.CNIC, new { id = "txtQID", @class = "form-control", onkeyup = "SearchPatientByMobileNo(event);" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Passport No</label>
+                                                    @Html.TextBoxFor(model => model.Person.PassportNo, new { id = "txtPassportNo", @class = "form-control" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Visa No</label>
+                                                    @Html.TextBoxFor(model => model.Person.VisaNo, new { id = "txtVisaNo", @class = "form-control" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Nationality</label>
+                                                    @Html.DropDownListFor(model => model.Person.NationalityId, new SelectList(ViewBag.ddl_Nationality, "ProfileId", "ProfileName", ""), "Select Nationality", new { id = "ddl_Nationality", @class = "form-control", })
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="req">First Name</label>
+                                                    @Html.TextBoxFor(model => model.Person.FistName, new { id = "txtFirstName", @class = "form-control capitalEach name" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Middle Name 1</label>
+                                                    @Html.TextBoxFor(model => model.Person.MiddleName, new { id = "txtMiddleName", @class = "form-control capitalEach name" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Middle Name 2</label>
+                                                    @Html.TextBoxFor(model => model.Person.MiddleName2, new { id = "txtMiddleName2", @class = "form-control capitalEach name" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Middle Name 3</label>
+                                                    @Html.TextBoxFor(model => model.Person.MiddleName3, new { id = "txtMiddleName3", @class = "form-control capitalEach name" })
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-3" style="display:none">
+                                                <div class="form-group">
+                                                    <label>Title</label>
+                                                    @Html.DropDownListFor(model => model.Person.TitleId, new SelectList(ViewBag.ddl_Title, "TitleId", "TitleName", ""), "Select Title", new { id = "ddl_Title", onchange = "ChangeGenderOnTitle(this.value)", @class = "form-control" })
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="req">Last Name</label>
+                                                    @Html.TextBoxFor(model => model.Person.LastName, new { id = "txtLastName", @class = "form-control capitalEach name" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Gender</label>
+                                                    @Html.DropDownListFor(model => model.Person.GenderProfileId, new SelectList(ViewBag.ddl_Gender, "ProfileId", "ProfileName", ""), "Select Gender", new { id = "ddl_Gender", @class = "form-control", })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="chkDOB">DOB</label>
+                                                    @Html.TextBoxFor(model => model.Person.DOB, new { id = "dpkDOB", @class = "form-control date_d_m_y", @onblur = "CalculateAge();" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Age</label>@*<input type="checkbox" id="chkDOB" onchange="EnableDisableDOB(this.checked);" /><label for="chkDOB">Disable DOB</label>*@
+                                                <div class="row" style="margin-bottom:2%;" id="Age">
+                                                    <div class="col-md-4 col-sm-4">
+                                                        <div class="form-inline">
+                                                            <div class="input-group ">
+                                                                @Html.TextBoxFor(model => model.PatientAgeYear, new { @id = "txtYear", @class = "form-control numeric", @onchange = "ChangeDOB(this.value);", Value = 0, @disabled = "disabled" })
+                                                                <span class="input-group-addon">
+                                                                    <span class="glyphicon">Y</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-4">
+                                                        <div class="form-inline">
+                                                            <div class="input-group ">
+                                                                @Html.TextBoxFor(model => model.PatientAgeMonth, new { @id = "txtMonth", @class = "form-control numeric", @onchange = "ChangeDOB(this.value);", Value = 0, @disabled = "disabled" })
+                                                                <span class="input-group-addon">
+                                                                    <span class="glyphicon">M</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-4">
+                                                        <div class="form-inline">
+                                                            <div class="input-group ">
+                                                                @Html.TextBoxFor(model => model.PatientAgeDay, new { @id = "txtDay", @class = "form-control numeric", @onchange = "ChangeDOB(this.value);", Value = 0, @disabled = "disabled" })
+                                                                <span class="input-group-addon">
+                                                                    <span class="glyphicon">D</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-3" style="display:none">
+                                                        <div class="form-inline">
+                                                            <div class="input-group ">
+                                                                @Html.TextBoxFor(model => model.PatientAgeHour, new { @id = "txtHour", @class = "form-control numeric", @onchange = "ChangeDOB(this.value);", Value = 0, @disabled = "disabled" })
+                                                                <span class="input-group-addon">
+                                                                    <span class="glyphicon">H</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @Html.TextBox("txtPatientAge", "", new { id = "txtPatientAge", @class = "form-control", style = "display:none;" })
+                                                </div>
+                                            </div>
+                                       
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Email</label>
+                                                    @Html.TextBoxFor(model => model.Person.Email, new { id = "txtEmail", @class = "form-control email" })
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Note</label>
+                                                    @Html.TextBoxFor(model => model.Remarks, new { @id = "txtRemarks", @class = "form-control" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Last Visit Date</label>
+                                                    @Html.TextBox("dpkLastVisitDate", null, new { id = "dpkLastVisitDate", disabled = "true", @class = "form-control" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row" style="display:none">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Relation Title</label>
+                                                    @Html.DropDownListFor(model => model.Person.SubTitleId, new SelectList(ViewBag.ddl_SubTitle, "TitleId", "TitleName", ""), "Select Relation", new { @id = "ddl_SubTitle", @class = "form-control" })
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Relation Name</label>
+                                                    @Html.TextBoxFor(model => model.Person.FatherName, new { @id = "txtFatherName", @class = "form-control capitalEach name" })
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="padding-right: 0px !important;">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="col-md-12">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                Referral Information
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row rowAdj">
+                                        <div class="col-md-12" id="divExternalRef">
+                                            <div class="form-group">
+                                                <label>Ref.Doctor/Hospital</label>
+                                                @Html.Partial("~/Views/Common/_ExternalReferralPartialView.cshtml", 1)
+                                                @* @Html.TextBoxFor(model => model.PatientOrderSet.RefPersonName, new { @id = "txtRefPersonName", @class = "form-control capitalEach", })*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 PaddingAdj" style="display:none;">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">
+                                                <span>Referral Information</span>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="row rowAdj">
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            @Html.RadioButton("txtReferral", false, new { @onchange = "showRef('INT'); return false;", id = "rdbIntReferral" })<label for="rdbIntReferral">Internal Ref</label>
+                                                            @Html.RadioButton("txtReferral", false, new { @onchange = "showRef('EXT'); return false;", id = "rdbExtReferral" })<label for="rdbExtReferral">External Ref</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row rowAdj">
+                                                    <div class="col-md-12" style="display:none" id="divInternalRef">
+                                                        <div class="form-group">
+                                                            @Html.TextBox("txtEmplyeeId", null, new { id = "txtEmplyeeId", @class = "form-control", style = "display:none;" })
+                                                            @Html.Partial("~/Views/Common/_EmployeePartialView.cshtml")
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row rowAdj">
+                                                    <div class="col-md-12" style="display:none" id="divExternalRef">
+                                                        <div class="form-group">
+                                                            @Html.TextBox("txtPartyLocationId1", null, new { id = "txtPartyLocationId1", @class = "form-control", style = "display:none;" })
+                                                            @Html.Partial("~/Views/Common/_PartyLocationPartialView.cshtml", 1)
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="panel panel-default" style="display:none" id="divParty">
+                                            <div class="panel-heading">
+                                                <span>Pay Detail Information</span>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="row rowAdj">
+                                                    <div class="col-md-12">
+                                                        <div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label>Party</label>
+                                                                    @Html.TextBox("txtPartyName", null, new { @class = "form-control", @readonly = "readonly" })
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label>Party Location</label>
+                                                                    @Html.TextBox("txtPartyLocName", "", new { @class = "form-control", @readonly = "readonly" })
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="col-md-12">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                Appointment Information
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="req">Appointment Type</label>
+                                                @Html.DropDownListFor(model => model.AppointmentTypeProfileId, new SelectList(ViewBag.ddl_AppointmentType, "ProfileId", "ProfileName", "ProfileId"), new { @id = "ddl_AppointmentType", @class = "form-control" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="req">Shift</label>
+                                                @Html.DropDownListFor(model => model.InquiryShiftId, new SelectList(ViewBag.ddl_Shift, "ShiftId", "ShiftName", ViewBag.ddl_Shift[0].ShiftId), "Select Shift", new { id = "ddl_Shift", @class = "form-control", onchange = "GetScheduleTypeByDepartmentComponent();" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="req">Inquiry On</label>
+                                                @Html.DropDownListFor(model => model.InquiryOnProfileId, new SelectList(ViewBag.ddl_InquiryOn, "ProfileId", "ProfileName", ViewBag.ddl_InquiryOn[0].ProfileId), "Select Inquiry On", new { id = "ddl_InquiryOn", onchange = "CheckForIsConfirm()", @class = "form-control", })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <label class="req">OPD / Doctor</label>
+                                                @Html.DropDownListFor(model => model.DepartmentComponentId, new SelectList(ViewBag.ddl_DepartmentComponent, "Value", "Text", ""), "Select OPD / Doctor", new { @class = "form-control", id = "ddl_DepartmentComponent", onchange = "DepartmentComponentOnChange();" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="req">Bill Category</label>
+                                                @if (Model != null && Model.BillCategoryProfileId != null)
+                                                {
+                                                    @*@Html.HiddenFor(model => model.BillCategoryProfileId)*@
+                                                    @Html.DropDownListFor(model => model.BillCategoryProfileId, new SelectList(ViewBag.ddl_PatientCategory, "ProfileId", "ProfileName", ""), "Select Patient Category", new { id = "ddl_PatientCategory", @class = "form-control" })
+
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(model => model.BillCategoryProfileId, new SelectList(ViewBag.ddl_PatientCategory, "ProfileId", "ProfileName", ViewBag.ddl_PatientCategory[0].ProfileId), "Select Patient Category", new { id = "ddl_PatientCategory", @class = "form-control" })
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-9">
+                                            @Html.TextBox("txtScheduleTypeId", null, new { id = "txtScheduleTypeId", @class = "form-control", style = "display:none;" })
+                                            @Html.Partial("~/Views/Common/_ScheduleTypePartialView.cshtml")
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Fee</label>
+                                                @Html.TextBox("txtDepartmentComponentFee", null, new { id = "txtDepartmentComponentFee", @class = "form-control", @readonly = "readonly" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--<div class="row">
+                                    <div class="col-md-12 pull-right">
+                                        <div class="form-group">-->
+                                    @*@Html.CheckBoxFor(model => model.IsConfirmed, new { @id = "chkIsConfirmed" }) <label for="chkIsConfirmed"> Is Confirmed</label>*@
+                                    <!--<label for="chkIsOnChance" style="float:right;padding-top:6px;"> Is On Chance</label>
+                                                @Html.CheckBoxFor(model => model.IsOnChance, new { id = "chkIsOnChance", style = "zoom:1.5;float:right;" })
+                                            </div>
+                                        </div>
+                                    </div>-->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="display:none;">
+            <div class=" PaddingAdj">
+                <div class=" panel panel-default">
+                    <div class="panel-heading">
+                        Inquiry Information
+                    </div>
+                    <div class="panel-body">
+                        <div>
+                            <div class="row" style="display:none">
+                                <div class="form-group">
+                                    <label>Patient Inquiry Id</label>
+                                    @Html.TextBoxFor(model => model.PatientInquiryId, new { id = "txtPatientInquiryId", disabled = "true", @class = "form-control", style = "display:none;" })
+                                    @Html.TextBoxFor(model => model.FromInquiryScheduleSlotId, new { id = "txtFromInquiryScheduleSlotId", disabled = "true", @class = "form-control", style = "display:none;" })
+                                </div>
+                            </div>
+                            <div class="row">
+
+
+                                <div class="col-md-4" style="display:none;">
+                                    <div class="form-group">
+                                        <label class="req">Department Group</label>
+                                        @Html.DropDownList("ddl_DepartmentGroup", new SelectList(ViewBag.ddl_DepartmentGroup, "DepartmentGroupId", "GroupName", ""), "Select Department Group", new { id = "ddl_DepartmentGroup", @class = "form-control", onchange = "GetDepartmentComponentByGroup()" })
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="row">
+
+                            </div>
+                            <div class="row">
+
+                            </div>
+                            <div class="row">
+                                @*   <button id="btnLoadSlot" type="button" class="btn btn-success" onclick="GetAllSlotsByDepartmentComponentDate();">Load Slots</button>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="row" id="shdslot">
+            <div class="panel panel-default">
+                <div class="clearfix"></div>
+                @*<div class="panel-heading">
+                        <span>
+                            Schedule Slot Detail
+                        </span>
+                    </div>*@
+                <div class="panel-body">
+                    <ul class="nav nav-tabs" @*style="margin-top:1%;"*@>
+                        <li class="active"><a data-toggle="tab" href="#tabScheduleSlot">Slot Detail</a></li>
+                        <li><a data-toggle="tab" href="#tabSlotSummary">Slot Summary</a></li>
+                        <li class="pull-right">
+                            <div>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="button" class="btn btn-danger" onclick="Clear()">Clear</button>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="tabScheduleSlot" class="tab-pane fade in active">
+                            <div class="col-md-6">
+                                <div class=" panel panel-default">
+                                    <div class="panel-heading" style="text-align:center;">
+                                        Morning
+                                    </div>
+                                    <div class="panel-body" style="padding:0px !important;">
+                                        <div class="row">
+                                            <div class="col-md-12" style="padding:0px !important;">
+                                                <div class="table-responsive" style="background-color:white">
+                                                    <table style="text-align:center" id="tblInquiryScheduleSlot" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="hidden"> Id</th>
+                                                                <th> Select</th>
+                                                                <th> Slot No</th>
+                                                                @*<th> Booking Type</th>*@
+                                                                <th> Appointment Time</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody></tbody>
+                                                        <tfoot>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class=" panel panel-default">
+                                    <div class="panel-heading" style="text-align: center; background-color: #47B0D0 !important">
+                                        Evening
+                                    </div>
+                                    <div class="panel-body" style="padding:0px !important;">
+                                        <div class="row">
+                                            <div class="col-md-12" style="padding:0px !important;">
+                                                <div class="table-responsive" style="background-color:white">
+                                                    <table style="text-align:center" id="tblInquiryScheduleSlot1" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="hidden"> Id</th>
+                                                                <th> Select</th>
+                                                                <th> Slot No</th>
+                                                                @*<th> Booking Type</th>*@
+                                                                <th> Appointment Time</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody></tbody>
+                                                        <tfoot>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tabSlotSummary" class="tab-pane fade">
+                            <div class="col-md-12">
+                                <div class="row" style="margin-top:1%">
+                                    <div class="col-md-8">
+                                        <div class=" panel panel-default" id="panelSlotDetail">
+                                            @*<div class="panel-heading">
+                                                    Slots Detail Information
+                                                </div>*@
+                                            <div class="panel-body">
+                                                <div class="col-md-12">
+                                                    <div class="row">
+                                                        <table id="tblTotalSlots" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th style="width:32%"> Total Normal Booking</th>
+                                                                    <th style="width:32%"> Total Over Booking</th>
+                                                                    <th style="width:32%"> Total Slot</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody></tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="row">
+                                                        <table id="tblTotalBookedSlots" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th style="width:32%"> Normal Booked</th>
+                                                                    <th style="width:32%"> Over Booked</th>
+                                                                    <th style="width:32%"> Total Booked</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody></tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="row">
+                                                        <table id="tblTotalFreeSlots" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th style="width:32%"> Normal Free</th>
+                                                                    <th style="width:32%"> Over Free</th>
+                                                                    <th style="width:32%"> Total Free</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody></tbody>
+                                                        </table>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="panel-body">
+                <div class="row">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-danger" onclick="Clear()">Clear</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@Html.Partial("~/Views/Common/_SearchModalPartialView.cshtml")
+
+<div id="modalboxPatientBalance" class="modal">
+    <div class="modal-dialog" style="width: 90%; max-width: 100%;">
+        <div class="modal-content ">
+            <div class="modal-header ">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="col-md-6">
+                            <h4>Patient Balance</h4>
+                        </div>
+                        <div class="col-md-6">
+                            <input class="form-control" style="max-width: 63px; float: right;margin-right: 20px;" type="button" value="Close" data-dismiss="modal" onclick="PatientBalancePopupClose();" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body " style="margin-top:30px!important">
+                <div class="row" style="margin-left:0.5%;">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div id="purRequDetailBlance" class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-12">Patient List</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="col-md-12">
+                                            <div class="row" style="margin-bottom:0%;">
+                                                <div class="table-responsive" style="background-color:white">
+                                                    <table style="text-align:center" id="tblPopUpPatientBalance" style="margin-left:2%;width:96%" class="table table-striped table-bordered table-responsive table-condensed table-hover">
+                                                        <thead>
+                                                            <tr class="noExl" onclick="fnSelect(event)">
+
+                                                                <th>Visit No</th>
+                                                                <th>OPD / Doctor</th>
+                                                                <th>Service Name</th>
+                                                                <th>Visit Date</th>
+                                                                <th>Balance</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="popupPatientBalanceDetails"></tbody>
+                                                        <tfoot>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("~/Views/Common/_PrintPreview.cshtml")
+
+<script type="text/javascript">
+    var lstSlots = new Array();
+    var lstSlotSaveArray = new Array();
+    var slotId = "";
+    var lstTitle = new Array();
+    var lstReferralDoctor = new Array();
+    var refHosArray = new Array();
+    var lstInquiryOn = new Array();
+    var InquirySave = "";
+    var returnView = "";
+    var modelData = new Object();
+
+    $(document).ready(function () {
+
+        BindViewBagData()
+
+        shortcut.add("Alt+S", function () {
+            $("#frmPatientInquiry").submit();
+        });
+        shortcut.add("Alt+C", function () {
+            Clear();
+        });
+        shortcut.add("Alt+L", function () {
+            List();
+        });
+
+        $("#txtMobileNo").mask("");
+        $("#txtMobileNo2").mask("");
+        $("#txtQID").mask("");
+        $('#txtMobileNo').attr("placeholder", MOBILE_FORMATE);
+        $('#txtMobileNo2').attr("placeholder", MOBILE_FORMATE);
+        $('#txtQID').attr("placeholder", CNIC_FORMATE);
+        $('#chkIsConfirmed').disable();
+        $('#chkIsOnChance').disable();
+        $("#divRefEmployee").hide();
+        $("#dpkAppointmentDate").setValue(new Date().toLocaleDateString());
+        returnView = '@ViewBag.ReturnView';
+        if ('@ViewBag.InquiryIndex' == "OPD") {
+            $('#liListUrl').attr('href', "/HMS/PatientInquiry/OPDList");
+            InquirySave = "OPD";
+        } else if ('@ViewBag.InquiryIndex' == "Clinic") {
+            $('#liListUrl').attr('href', "/HMS/PatientInquiry/ClinicList");
+            InquirySave = "Clinic";
+        }
+       // $("#chkDOB").setValue(true);
+        EnableDisableDOB(false);
+        var rdbNewValue = $("#rdbNewPatient").getValue();
+        if (rdbNewValue) {
+            CheckNewPatient(rdbNewValue);
+        }
+        $("#dpkAppointmentDate").setValue(ConvertToMonthDayYearFormat(new Date()));
+
+        GetInitialData();
+        if ('@ViewBag.FromStatus' == "Edit") {
+            modelData = JSON.parse('@Html.Raw(Json.Encode(Model))');
+            if (modelData != null) {
+                $("#txtRemarks").setValue(modelData.Remarks);
+            }
+            GetDepartmentComponentByGroup();
+        }
+
+
+    });
+
+    $(document).keydown(function (event) {
+        if (event.keyCode == 27) {
+            $("#modalboxPatient").hide("modal");
+            $("#modalboxPatientBalance").hide("modal");
+        }
+    });
+
+    function BindViewBagData() {
+        if ('@ViewBag.PatientId' != null && '@ViewBag.PatientId' != '') {
+            var patientId = '@ViewBag.PatientId';
+            Search(patientId);
+        }
+    }
+
+
+    function EnableDisableDOB(val) {
+        try {
+            if (val) {
+                $('#dpkDOB').prop('disabled', true);
+                $("#dpkDOB").setValue('__/__/____');
+                $('#txtYear').setValue('0');
+                $('#txtMonth').setValue('0');
+                $('#txtDay').setValue('0');
+                $('#txtHour').setValue('0');
+            }
+            else {
+                $('#dpkDOB').prop('disabled', false);
+            }
+        }
+        catch (e) {
+            console.log(e.message);
+        }
+    }
+    function GetInitialData() {
+        lstReferralDoctor = new Array();
+        var _url = '@Url.Action("GetInitialData", "PatientInquiry")';
+        var _data = "{}";
+        $.AjaxJsonRequest(_url, _data, function (msg) {
+            if (msg.lstTitle != null) {
+                lstTitle = msg.lstTitle;
+                refHosArray = msg.lstReferralHos;
+                lstInquiryOn = msg.lstInquiryOn;
+                if (lstInquiryOn != null) {
+                    $('#ddl_InquiryOn').setValue(lstInquiryOn[0].ProfileId);
+                    CheckForIsConfirm();
+                }
+
+                if ('@ViewBag.DepartmentGroupId' != null && '@ViewBag.DepartmentGroupId' != "") {
+                    $('#ddl_DepartmentGroup').setValue('@ViewBag.DepartmentGroupId');
+                    $('#ddl_DepartmentGroup').disable();
+                    //$('#ddl_DepartmentGroup').trigger("change");
+                }
+            }
+        });
+    }
+
+      function List() {
+      window.location.href = '@Url.Action("PatientAppointNew", "InquiryStatus")';
+    }
+    var lstScheduleFeeArray = new Array();
+
+    function GetDepartmentComponentByGroup() {
+        if (!$("#ddl_DepartmentGroup").validate(MSG_REQ)) {
+            $("#ddl_DepartmentComponent").empty();
+            $("#ddl_DepartmentComponent").append($('<option/>', {
+                value: "$",
+                text: "Select Department Component"
+            }));
+            return;
+        };
+        //var departmentGroupId = $("#ddl_DepartmentGroup").getValue();
+        // NO NEED FOR THIS AJAX CALL EXTRA CALLING METHOD.
+        @*var url = '@Url.Action("GetDepartmentComponentByGroup", "PatientInquiry")';
+        var data = JSON.stringify({ departmentGroupId: departmentGroupId });
+        $.AjaxJsonRequest(url, data, function (msg) {*@
+            //var lstDeptComponent = msg.lstDeptComponent;
+            //if (lstDeptComponent != null) {
+            //    $.each(lstDeptComponent, function (index, itemData) {
+            //        $("#ddl_DepartmentComponent").append($('<option/>', {
+            //            value: itemData.DepartmentComponentId,
+            //            text: itemData.ComponentName
+            //        }));
+        //    });
+        
+                if ('@ViewBag.scheduleDate' != null && '@ViewBag.scheduleDate' != '') {
+                    var scheduleDate = '@ViewBag.scheduleDate';
+                    $("#dpkAppointmentDate").setValue(ConvertToMonthDayYearFormat(new Date(scheduleDate)));
+                    //$("#dpkAppointmentDate").disable();
+                    //$("#dpkAppointmentDate").off('change');
+                    //$("#dpkAppointmentDate").off("change", OnAppointmentDateChange);
+                    //$("#dpkAppointmentDate").datetimepicker({
+
+                    //    scrollMonth: false,
+                    //    scrollInput: false
+                    //});
+                }
+
+                if ('@ViewBag.ExternalRefId' != null && '@ViewBag.ExternalRefId' != '') {
+                    $("#rdbExtReferral").setValue(true);
+                    $("#txtPartyLocationId1").setValue('@ViewBag.ExternalRefId');
+                    $("#txtPartyLocationName1").setValue('@ViewBag.ExternalRefName');
+                    $("#divExternalRef").show();
+                }
+                if ('@ViewBag.InternalRefId' != null && '@ViewBag.InternalRefId' != '') {
+                    $("#rdbIntrReferral").setValue(true);
+                    $("#txtEmplyeeId").setValue('@ViewBag.InternalRefId');
+                    $("#txtEmployeeName").setValue('@ViewBag.InternalRefName');
+                    $("#divInternalRef").show();
+
+                }
+                if ('@ViewBag.ScheduleTypeFee' != null && '@ViewBag.ScheduleTypeFee' != '') {
+                    $("#txtDepartmentComponentFee").setValue(parseInt('@ViewBag.ScheduleTypeFee'));
+                }
+                if ('@ViewBag.Shift' != null && '@ViewBag.Shift' != '') {
+                    $("#ddl_Shift").setValue('@ViewBag.Shift');
+                    $("#ddl_Shift").disable();
+                }
+
+                @*if ('@ViewBag.DepartmentComponentId' != null && '@ViewBag.DepartmentComponentId' != '') {
+                    var departmentComponentId = '@ViewBag.DepartmentComponentId';
+                    $("#ddl_DepartmentComponent").setValue(departmentComponentId);
+                    //$("#ddl_DepartmentComponent").disable();
+                    DepartmentTriggerChange();
+                    //GetAllSlotsByDepartmentComponentDate();
+                } else {
+                    if (lstDeptComponent.length == 1) {
+                        $("#ddl_DepartmentComponent").setValue(lstDeptComponent[0].DepartmentComponentId);
+                        DepartmentTriggerChange();
+                    }
+                }*@
+                GetScheduleTypeByDepartmentComponent();
+            //}
+       /* });*/
+    }
+    function OnAppointmentDateChange() {
+        //$("#ddl_Shift").setValue('');
+        if ('@ViewBag.DepartmentComponentId' != null && '@ViewBag.DepartmentComponentId' != '' ) {
+            $("#ddl_DepartmentComponent").setValue('@ViewBag.DepartmentComponentId');
+        }
+        if ('@ViewBag.ScheduleTypeId' != null && '@ViewBag.ScheduleTypeId' != '') {
+            $("#txtScheduleTypeId").setValue('@ViewBag.ScheduleTypeId');
+            $("#txtScheduleTypeName").setValue('@ViewBag.ScheduleTypeName');
+            $("#txtScheduleTypeName").disable();
+        }
+        if ('@ViewBag.ScheduleTypeFee' != null && '@ViewBag.ScheduleTypeFee' != '') {
+            $("#txtDepartmentComponentFee").setValue(parseInt('@ViewBag.ScheduleTypeFee'));
+        }
+        lstSlotSaveArray = new Array();
+        Fill_PatientInquirySlot(new Array());
+        Fill_PatientInquirySlot1(new Array());
+        GetScheduleTypeByDepartmentComponent();
+    }
+
+    function DepartmentTriggerChange() {
+        if (!$("#ddl_DepartmentComponent").validate(MSG_REQ)) return;
+        var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+        Fill_PatientInquirySlot(new Array());
+        Fill_PatientInquirySlot1(new Array());
+        lstSlotSaveArray = new Array();
+        GetAllSlotsByDepartmentComponentDate();
+    }
+
+
+    function GetScheduleTypeByDepartmentComponent() {
+        if (!$("#ddl_Shift").validate(MSG_REQ)) return;
+        if (!$("#dpkAppointmentDate").validate(MSG_REQ)) return;
+
+        $("#ddl_DepartmentComponent").html('');
+
+        var url = '@Url.Action("GetDepartmentComponent", "PatientInquiry")';
+        var data = JSON.stringify({ date: $("#dpkAppointmentDate").val(), shiftId: $("#ddl_Shift").val(), ComponentFor: '@ViewBag.InquiryIndex' });
+        $.AjaxJsonRequest(url, data, function (response) {
+            if (response.data != "") {
+                var data = JSON.parse(response.data);
+                if (data != null) {
+                    var html = "";
+                    if ('@ViewBag.InquiryIndex' == "Clinic") {
+                        html += "<option value=''>Select Clinic</option>";
+                    }
+                    else {
+                        html += "<option value=''>Select OPD</option>";
+                    }
+                    for (var i = 0; i < data.length; i++) {
+                        var selected = "";
+                        if ('@ViewBag.DepartmentComponentId' != null && '@ViewBag.DepartmentComponentId' != '' && data[i].DepartmentComponentId == '@ViewBag.DepartmentComponentId') {
+                            selected = "selected";
+                        }
+                        html += "<option value=" + data[i].DepartmentComponentId + " " + selected + "> " + data[i].ComponentName + "</option>";
+                    }
+                    $("#ddl_DepartmentComponent").html(html);
+
+                    if ('@ViewBag.DepartmentComponentId' != null || '@ViewBag.DepartmentComponentId' != '') {
+                        $("#ddl_DepartmentComponent").setValue('@ViewBag.DepartmentComponentId');
+                        DepartmentTriggerChange();
+                    }
+                }
+
+            }
+
+        });
+    }
+
+    function DepartmentComponentOnChange() {
+        var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+        var date = $("#dpkAppointmentDate").getValue();
+        var shiftId = $("#ddl_Shift").getValue();
+        GetAllScheduleTypeFee(departmentComponentId, shiftId, date);
+        if (departmentComponentId != "" || departmentComponentId != undefined || departmentComponentId != null) {
+            var appointmentDate = $("#dpkAppointmentDate").val();
+            if (appointmentDate) {
+                var dateParts = appointmentDate.split('/');
+                var month = parseInt(dateParts[0], 10);
+                if ('@ViewBag.ScheduleTypeId' != null && '@ViewBag.ScheduleTypeId' != '') {
+                    for (var i = 0; i < lstScheduleFeeArray.length; i++) {
+                        if (lstScheduleFeeArray[i].ScheduleTypeProfileId == '@ViewBag.ScheduleTypeId') {
+                            AddScheduleType(lstScheduleFeeArray[i], false)
+                        }
+                    }
+                }
+                else if (month === 3) {
+                    for (var i = 0; i < lstScheduleFeeArray.length; i++) {
+                        if (lstScheduleFeeArray[i].ScheduleTypeProfileId == 701) {
+                            AddScheduleType(lstScheduleFeeArray[i], false)
+                        }
+                    }
+                    //AddScheduleType({ DepartmentComponentId: departmentComponentId, ScheduleTypeProfileId: '701', ScheduleType: 'Ramadan Schedule', FeeCharges: '500' });
+                }
+            }
+        }
+        lstSlotSaveArray = new Array();
+        Fill_PatientInquirySlot(new Array());
+        Fill_PatientInquirySlot1(new Array());
+    }
+
+    function GetSchedule(date, departmentComponentId, shiftId, scheduleTypeId) {
+        lstSlotSaveArray = new Array();
+        var url = '@Url.Action("GetSchedule", "PatientInquiry")';
+        var data = JSON.stringify({ Date: date, DepartmentComponentID: departmentComponentId, shiftId: shiftId, scheduleTypeId: scheduleTypeId });
+        $.AjaxJsonRequest(url, data, function (msg) {
+            var MyData = $.parseJSON(msg);
+            if (MyData.MessageText != "") {
+                ShowMessage("1", MyData.MessageText);
+            }
+            else {
+
+                //$("#txtScheduleTypeName").setValue(MyData.Schedule);
+                //$("#txtDepartmentComponentFee").setValue(MyData.FeeCharges);
+                if (MyData.lstSlots != null) {
+                    lstSlots = MyData.lstSlots;
+                    const [firstHalf, secondHalf] = splitArrayInHalf(MyData.lstSlots);
+                    Fill_PatientInquirySlot(firstHalf);
+                    Fill_PatientInquirySlot1(secondHalf);
+                    //for (var i = 0; i < lstSlots.length; i++) {
+                    //    if (!lstSlots[i].IsBooked) {
+                    //        SelectSlots(true, lstSlots[i].InquiryScheduleSlotId);
+                    //        break;
+                    //    }
+                    //}
+                   // $("#" + MyData.lstSlots[0].InquiryScheduleSlotId).setValue(true);
+                    $('#chkIsOnChance').setValue(false);
+                } else {
+                    Fill_PatientInquirySlot(new Array());
+                    Fill_PatientInquirySlot1(new Array());
+                    $('#chkIsOnChance').setValue(true);
+                    $('#chkIsOnChance').prop('disabled', true);
+                }
+                if (MyData.objSlot != null) {
+                    BindSlotSummary(MyData.objSlot);
+                }
+            }
+        });
+    }
+
+    function splitArrayInHalf(arr) {
+        const thresholdHour = 16; // 4:00 PM
+        const thresholdMinute = 0; // 00 minutes
+
+        const firstHalf = [];
+        const secondHalf = [];
+
+        arr.forEach(row => {
+            const time = new Date(parseInt(row.StartDateTime.substr(6)));
+            const rowHour = time.getHours();
+            const rowMinute = time.getMinutes();
+
+            if (rowHour < thresholdHour || (rowHour === thresholdHour && rowMinute < thresholdMinute)) {
+                firstHalf.push(row);
+            } else {
+                secondHalf.push(row);
+            }
+        });
+
+        return [firstHalf, secondHalf];
+    }
+
+
+    function ChangeGenderOnTitle(value) {
+
+        for (var i = 0; i < lstTitle.length; i++) {
+            if (lstTitle[i].TitleId == value) {
+                $("#ddl_Gender").setValue(lstTitle[i].GenderProfileId);
+            }
+        }
+    }
+
+
+    function SearchPatient(e, id) {
+
+        if (e.keyCode == 13) {
+            var val = $("#" + id).getValue();
+            if (val.trim() == "") return;
+            Search(val);
+            PatientBalance(val);
+        }
+    }
+
+     function PatientBalance(val) {
+
+         var patId = val;
+         var url = '@Url.Action("PatientBalance", "PatientInquiry")';
+
+         var formData = new FormData();
+         formData.append("patientId", patId);
+         $.AjaxRequest(url, formData, function (msg) {
+             var lstPatient = msg.lstPatient;
+             if (lstPatient != null) {
+                 $("#modalboxPatientBalance").show("modal");
+                 $('#tblPopUpPatientBalance').dataTable().fnDestroy(); // Destroy DataTables from current table
+                 Fill_PatientBalancePopUp(lstPatient);;
+             }
+         });
+     }
+
+    function Fill_PatientBalancePopUp(lstPatient) {
+        try {
+            $("#tblPopUpPatientBalance").dataTable({
+                "bProcessing": true,
+                // "sScrollX": "100%",
+                //"sScrollXInner": "110%",
+                //"bScrollCollapse": true,
+                "aaData": lstPatient,
+                "deferRender": true,
+                "destroy": true,
+                //"aaSorting": [[1, 'desc'], [6, 'desc']],
+                "aaSorting": [[0, 'desc']],
+                "aoColumns": [
+                    { "mData": "PatientOrderNo" },
+                    { "mData": "ComponentName" },
+                    { "mData": "ServiceName" },
+                    { "mData": "PatientOrderOn" },
+                    { "mData": "NetBalance" },
+
+                ]
+            });
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+    function Search(val) {
+        
+        var patId = val;
+        var url = '@Url.Action("SearchPatientById", "PatientInquiry")';
+        var data = { patientId: patId };
+        $.get(url, data, function (msg) {
+            var patientDetail = msg.objPatient;
+            var personDetail = msg.objPerson;
+            var patientLastVisit = msg.objPatPrescibe;
+            //if (patientLastVisit != null) {
+            //    var lastVisitDate = ConvertToMonthDayYearFormat(new Date(parseInt(patientLastVisit.CreatedOn.substr(6))))
+            //    $("#dpkLastVisitDate").setValue(lastVisitDate);
+            //}
+            if (patientDetail != null) {
+                if (patientLastVisit != null) {
+                    var lastVisitDate = ConvertToMonthDayYearFormatRe(new Date(parseInt(patientLastVisit.PatientOrderOn.substr(6))))
+                    $("#dpkLastVisitDate").setValue(lastVisitDate);
+                }
+                $("#txtPatientId").setValue((patientDetail.PatientId != null) ? patientDetail.PatientId : "");
+                $("#txtPatientNo").setValue((patientDetail.PatientNo != null) ? patientDetail.PatientNo : "");
+                $("#rdbOldPatient").setValue(true);
+                $("#txtFirstName").setValue((patientDetail.FirstName != null) ? patientDetail.FirstName : "");
+                $("#txtLastName").setValue((patientDetail.LastName != null) ? patientDetail.LastName : "");
+                $("#ddl_Gender").setValue((patientDetail.GenderProfileId != null) ? patientDetail.GenderProfileId : "");
+                $("#txtMobileNo").setValue((patientDetail.Mobile1 != null) ? patientDetail.Mobile1 : "");
+                $("#txtMobileNo2").setValue((patientDetail.Mobile2 != null) ? patientDetail.Mobile2 : "");
+                $("#txtQID").setValue((patientDetail.CNIC != null) ? patientDetail.CNIC : "");
+                $("#ddl_Title").setValue((patientDetail.TitleId != null) ? patientDetail.TitleId : "");
+                $("#txtEmail").setValue((patientDetail.Email != null) ? patientDetail.Email : "");
+                $("#ddl_Nationality").setValue((patientDetail.NationalityId != null) ? patientDetail.NationalityId : "");
+                $("#ddl_SubTitle").setValue((patientDetail.SubTitleId != null) ? patientDetail.SubTitleId : "");
+                $("#txtFatherName").setValue((patientDetail.FatherName != null) ? patientDetail.FatherName : "");
+                $("#txtMiddleName").setValue((patientDetail.MiddleName != null) ? patientDetail.MiddleName : "");
+                $("#txtMiddleName2").setValue((patientDetail.MiddleName2 != null) ? patientDetail.MiddleName2 : "");
+                $("#txtMiddleName3").setValue((patientDetail.MiddleName3 != null) ? patientDetail.MiddleName3 : "");
+                $("#txtVisaNo").setValue((patientDetail.VisaNo != null) ? patientDetail.VisaNo : "");
+                $("#txtPassportNo").setValue((patientDetail.PassportNo != null) ? patientDetail.PassportNo : "");
+                if (patientDetail.DOB == null) {
+                    $("#chkDOB").setValue(true);
+                    EnableDisableDOB(true);
+                }
+                else {
+                    $("#dpkDOB").setValue(ConvertToMonthDayYearFormatRe(new Date(parseInt(patientDetail.DOB.substr(6)))));
+                    CalculateAge();
+                }
+
+                //Disabled();
+            }
+            else if (personDetail != null) {
+                $("#txtPersonId").setValue((personDetail.PersonId != null) ? personDetail.PersonId : "");
+                $("#txtFirstName").setValue((personDetail.FistName != null) ? personDetail.FistName : "");
+                $("#txtLastName").setValue((personDetail.LastName != null) ? personDetail.LastName : "");
+                $("#ddl_Gender").setValue((personDetail.GenderProfileId != null) ? personDetail.GenderProfileId : "");
+                $("#txtMobileNo").setValue((personDetail.Mobile1 != null) ? personDetail.Mobile1 : "");
+                $("#txtMobileNo2").setValue((personDetail.Mobile2 != null) ? personDetail.Mobile2 : "");
+                $("#txtQID").setValue((personDetail.CNIC != null) ? personDetail.CNIC : "");
+                $("#ddl_Title").setValue((personDetail.TitleId != null) ? personDetail.TitleId : "");
+                $("#txtEmail").setValue((personDetail.Email != null) ? personDetail.Email : "");
+                $("#ddl_Nationality").setValue((personDetail.NationalityId != null) ? personDetail.NationalityId : "");
+                $("#ddl_SubTitle").setValue((personDetail.SubTitleId != null) ? personDetail.SubTitleId : "");
+                $("#txtFatherName").setValue((personDetail.FatherName != null) ? personDetail.FatherName : "");
+                $("#txtMiddleName").setValue((personDetail.MiddleName != null) ? personDetail.MiddleName : "");
+                $("#txtMiddleName2").setValue((personDetail.MiddleName2 != null) ? personDetail.MiddleName2 : "");
+                $("#txtMiddleName3").setValue((personDetail.MiddleName3 != null) ? personDetail.MiddleName3 : "");
+                $("#txtVisaNo").setValue((personDetail.VisaNo != null) ? patientDetail.VisaNo : "");
+                $("#txtPassportNo").setValue((personDetail.PassportNo != null) ? personDetail.PassportNo : "");
+                if (personDetail.DOB != null) {
+                    $("#dpkDOB").setValue(ConvertToMonthDayYearFormatRe(new Date(parseInt(personDetail.DOB.substr(6)))));
+                    CalculateAge();
+                }
+            }
+        });
+    }
+
+    function Disabled() {
+        $("#txtPatientId").disable();
+        $("#ddl_Title").disable();
+        $("#ddl_Nationality").disable();
+        $("#ddl_Gender").disable();
+        $("#txtFirstName").disable();
+        $("#txtLastName").disable();
+        $("#txtMobileNo").disable();
+        $("#txtMobileNo2").disable();
+        $("#txtQID").disable();
+        $("#ddl_SubTitle").disable();
+        $("#txtFatherName").disable();
+        $("#txtEmail").disable();
+        $("#dpkDOB").disable();
+        $("#txtYear").disable();
+        $("#txtMonth").disable();
+        $("#txtDay").disable();
+    }
+    function EnabledField() {
+        //$("#txtPatientId").enable();
+        $("#ddl_Title").enable();
+        $("#ddl_Nationality").enable();
+        $("#ddl_Gender").enable();
+        $("#txtFirstName").enable();
+        $("#txtLastName").enable();
+        $("#txtMobileNo").enable();
+        $("#txtMobileNo2").enable();
+        $("#txtQID").enable();
+        $("#ddl_SubTitle").enable();
+        $("#txtFatherName").enable();
+        $("#ddl_Shift").enable();
+        $("#ddl_DepartmentComponent").enable();
+        $("#txtScheduleTypeName").enable();
+        $("#txtEmail").enable();
+
+    }
+    function CheckForIsConfirm() {
+        var inquiryOn = $('#ddl_InquiryOn').getValue();
+        for (var i = 0; i < lstInquiryOn.length; i++) {
+            if (lstInquiryOn[i].ProfilePrefix == INQPREFIX && lstInquiryOn[i].ProfileId == inquiryOn) {
+                $('#chkIsConfirmed').enable();
+                return;
+            }
+            else
+                $('#chkIsConfirmed').disable();
+        }
+    }
+    function CheckNewPatient(val) {
+        if (val) {
+            ClearPatientDetail();
+            EnabledField();
+            //$('#txtPatientId').disable()
+        }
+    }
+    function ClearPatientDetail() {
+        $('#txtPatientId').setValue('');
+        $('#txtRemarks').setValue('');
+        $('#txtFirstName').setValue('');
+        $('#txtLastName').setValue('');
+        $('#ddl_Gender').setValue('');
+        $('#txtMobileNo').setValue('');
+        $('#txtMobileNo2').setValue('');
+        $('#txtQID').setValue('');
+        $('#txtAddressDetail').setValue('');
+        $("#txtPassportNo").setValue('');
+        $("#txtVisaNo").setValue('');
+        $("#txtMiddleName").setValue('');
+        $("#txtMiddleName2").setValue('');
+        $("#txtMiddleName3").setValue('');    
+    }
+    function CheckOldPatient(val) {
+        if (val) {
+            ClearPatientDetail();
+            Disabled();
+            //$('#txtPatientId').enable();
+        }
+    }
+    function ChangeDOB(val) {
+        if (!$("#txtYear").validate(MSG_INFO)) return;
+        if (!$("#txtMonth").validate(MSG_INFO)) return;
+        if (!$("#txtDay").validate(MSG_INFO)) return;
+        if (!$("#txtHour").validate(MSG_INFO)) return;
+
+
+        var year = $("#txtYear").getValue();
+        var month = $("#txtMonth").getValue();
+        var day = $("#txtDay").getValue();
+        var hour = $("#txtHour").getValue();
+
+        var actualDate = new Date();
+        var newDate = new Date(actualDate.getFullYear() - new Number(year), actualDate.getMonth() - new Number(month), actualDate.getDate() - new Number(day));
+
+        $("#dpkDOB").setValue(ConvertToMonthDayYearFormatRe(newDate));
+    }
+    function CalculateAge() {
+      var  dateString = $("#dpkDOB").getValue();
+        var parts = dateString.split('/');
+        var day = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10) - 1; // Subtract 1 because months are zero-indexed in JavaScript
+        var year = parseInt(parts[2], 10);
+        var dob = new Date(year, month, day);
+        if (!CheckIsValidDate(dob) || dob == null || dob == '') {
+            $("#txtYear").setValue('0');
+            $("#txtMonth").setValue('0');
+            $("#txtDay").setValue('0');
+            $("#txtHour").setValue("0");
+            return;
+        }
+        var now = new Date();
+        var today = new Date(now.getYear(), now.getMonth(), now.getDate());
+
+        var yearNow = now.getYear();
+        var monthNow = now.getMonth();
+        var dateNow = now.getDate();
+
+        var yearDob = dob.getYear();
+        var monthDob = dob.getMonth();
+        var dateDob = dob.getDate();
+
+        yearAge = yearNow - yearDob;
+
+        if (monthNow >= monthDob)
+            var monthAge = monthNow - monthDob;
+        else {
+            yearAge--;
+            var monthAge = 12 + monthNow - monthDob;
+        }
+
+        if (dateNow >= dateDob)
+            var dateAge = dateNow - dateDob;
+        else {
+            monthAge--;
+            if (monthDob > 2)
+                var dateAge = 31 + dateNow - dateDob;
+            else
+                var dateAge = 28 + dateNow - dateDob;
+
+            if (monthAge < 0) {
+                monthAge = 11;
+                yearAge--;
+            }
+        }
+        var hours = 0;
+        //var patAge = selectedPatientAge.split(' ');
+        //if (patAge.length > 1) {
+        //    if (patAge[1] == "Hour(s)")
+        //        hours = patAge[0]
+        //}
+
+        if (yearAge > 200) {
+            ShowMessage('1', MSG_AGE);
+            $("#txtPatientAge").setValue('');
+            $("#txtYear").focus();
+            return;
+        }
+        else if (dateAge <= 0 && hours == 0) {
+            if (yearAge == 0 && monthAge == 0) {
+                ShowMessage('1', MSG_AGE);
+                $("#txtPatientAge").setValue('');
+                $("#txtYear").focus();
+                return;
+            }
+        }
+        $("#txtYear").setValue(yearAge);
+        $("#txtMonth").setValue(monthAge);
+        $("#txtDay").setValue(dateAge);
+        $("#txtHour").setValue("0");
+
+        if (hours != 0) {
+            $("#txtHour").setValue(hours);
+        }
+    }
+    function GetAllSlotsByDepartmentComponentDate() {
+        var counter = 0;
+        if (!$("#dpkAppointmentDate").validate(MSG_REQ)) counter++;
+        if (!$("#ddl_DepartmentComponent").validate(MSG_REQ)) counter++;
+        if (!$("#txtScheduleTypeName").validate(MSG_REQ)) counter++;
+        if (counter > 0) {
+
+            return;
+        }
+        var date = $("#dpkAppointmentDate").getValue();
+        var departmentComponentId = $("#ddl_DepartmentComponent").getValue();
+        var scheduleTypeId = $("#txtScheduleTypeId").getValue();
+        var shiftId = $("#ddl_Shift").getValue();
+        var editSlotId = 0;
+        if ('@ViewBag.InquiryScheduleSlotId' != '' && '@ViewBag.InquiryScheduleSlotId' != null) {
+            editSlotId = '@ViewBag.InquiryScheduleSlotId';
+        }
+
+        var url = '@Url.Action("GetByScheduleDepartmentComponentDate", "PatientInquiry")';
+        var data = JSON.stringify({ departmentComponentId: departmentComponentId, date: date, editSlotId: editSlotId, scheduleTypeId: scheduleTypeId, shiftId: shiftId });
+        $.AjaxJsonRequest(url, data, function (msg) {
+            
+            var data = $.parseJSON(msg);
+            if (data != null) {
+                if (data.lstSlots != null) {
+                    lstSlotSaveArray = new Array();
+                    lstSlots = data.lstSlots;
+                    const [firstHalf, secondHalf] = splitArrayInHalf(data.lstSlots);
+                    Fill_PatientInquirySlot(firstHalf);
+                    Fill_PatientInquirySlot1(secondHalf);
+                    @*if ('@ViewBag.InquiryScheduleSlotId' != null && '@ViewBag.InquiryScheduleSlotId' != '') {
+                        SelectSlots(true, @ViewBag.InquiryScheduleSlotId);
+                        //$("#" + '@ViewBag.InquiryScheduleSlotId').setValue(true);
+                    }*@
+                    let appointmentDate = ConvertToMonthDayYearFormat(new Date(parseInt(modelData.AppointmentDate.substr(6))));
+                    if (modelData != null && modelData.PatientInquiryDetails.length > 0 && appointmentDate == date) {
+                        for (var i = 0; i < modelData.PatientInquiryDetails.length; i++) {
+                            SelectSlots(true, modelData.PatientInquiryDetails[i].InquiryScheduleSlotId);
+                        }
+                    }
+                   // else {
+                        //for (var i = 0; i < lstSlots.length; i++) {
+                        //    if (!lstSlots[i].IsBooked) {
+                        //        SelectSlots(true, lstSlots[i].InquiryScheduleSlotId);
+                        //        break;
+                        //    }
+                        //}
+                        //SelectSlots(true, data.lstSlots[0].InquiryScheduleSlotId);
+                        //$("#" + data.lstSlots[0].InquiryScheduleSlotId).setValue(true);
+                    //}
+                } else {
+                    Fill_PatientInquirySlot(new Array());
+                    Fill_PatientInquirySlot1(new Array());
+                    $('#chkIsOnChance').setValue(true);
+                    $('#chkIsOnChance').prop('disabled', true);
+                }
+
+                if (data.MessageText != "") {
+                    ShowMessage("1", data.MessageText);
+                }
+                if (data.objSlot != null) {
+                    BindSlotSummary(data.objSlot);
+                }
+            }
+        });
+
+    }
+    function BindSlotSummary(objSlotDetail) {
+        //$('#panelSlotDetail').show();
+        //For total Slots
+        rows = "";
+        $('#tblTotalSlots tbody').empty();
+        rows += "<tr style=\"font-weight:800;text-align: center\">" +
+                  "<td >" + objSlotDetail.TotalNormalBooking + "</td>" +
+                  "<td>" + objSlotDetail.TotalOverBooking + "</td>" +
+                  "<td>" + objSlotDetail.TotalSlots + "</td>" +
+              "</tr>"
+        $(rows).appendTo('#tblTotalSlots tbody');
+        // For Total Free Slots
+        rows = "";
+        $('#tblTotalFreeSlots tbody').empty();
+        rows += "<tr style=\"font-weight:800;text-align: center\">" +
+                  "<td >" + objSlotDetail.TotalNormalFree + "</td>" +
+                  "<td>" + objSlotDetail.TotalOverFree + "</td>" +
+                  "<td>" + objSlotDetail.TotalSlotsFree + "</td>" +
+              "</tr>"
+        $(rows).appendTo('#tblTotalFreeSlots tbody');
+        //For Total Booked Slots
+        rows = "";
+
+        $('#tblTotalBookedSlots tbody').empty();
+
+        rows += "<tr style=\"font-weight:800;text-align: center\">" +
+                  "<td >" + objSlotDetail.TotalNormalBooked + "</td>" +
+                  "<td>" + objSlotDetail.TotalOverBooked + "</td>" +
+                  "<td>" + objSlotDetail.TotalBooked + "</td>" +
+              "</tr>"
+        $(rows).appendTo('#tblTotalBookedSlots tbody');
+    }
+    function Fill_PatientInquirySlot(lstPatientInquiry) {
+        try {
+            $("#tblInquiryScheduleSlot").dataTable({
+                "bProcessing": true,
+                "aaData": lstPatientInquiry,
+                clear: true,
+                "deferRender": true,
+                "searching": false,
+                "ordering": false,
+                "destroy": true,
+                "paging": false,
+                //pageLength: 100,
+                //lengthMenu: [[25, 50, 100, 100000], [25, 50, 100, "All"]],
+                autoFill: false,
+                //"lengthMenu": [[03, 05, 10, 25, 50, -1], [03, 05, 10, 25, 50, "All"]],
+                //"lengthMenu": [[20], [20]],
+                "aoColumns": [
+                        { "mData": "InquiryScheduleSlotId", className: "hidden" },
+                        {
+                            mRender: function (data, type, row) {
+                                if (row.IsBooked) {
+                                    return '<input id="' + row.InquiryScheduleSlotId + '" disabled name =\"chkAppointmentSlot\" style =\"width:18px;height:18px;\" type=\"checkbox\" onchange =\"SelectSlots(this.checked,this.id);\" /> ';
+                                }
+                                else {
+                                    return '<input id="' + row.InquiryScheduleSlotId + '" name =\"chkAppointmentSlot\" style =\"width:18px;height:18px;\" type=\"checkbox\" onchange =\"SelectSlots(this.checked,this.id);\" /> ';
+                                }
+                            }
+                        },
+                        { "mData": "SlotNo" },
+                         //{
+                         //    mRender: function (data, type, row) {
+                         //        if (row.IsOverBooking) {
+                         //            return "Over Booking";
+                         //        } else {
+                         //            return "Normal Booking";
+                         //        }
+                         //    }
+                         //},
+                       {
+                           mRender: function (data, type, row) {
+                               var abc = "" + new Date(parseInt(row.StartDateTime.substr(6))).toLocaleTimeString([], {
+                                   hour: '2-digit',
+                                   minute: '2-digit',
+                                   hour12: true
+                               }) + "" + " - " + "" + new Date(parseInt(row.EndDateTime.substr(6))).toLocaleTimeString([], {
+                                   hour: '2-digit',
+                                   minute: '2-digit',
+                                   hour12: true
+                               }) + "";
+                               return '<span style="font-weight:bold;">'+ abc+'</span>';//"" + new Date(parseInt(row.StartDateTime.substr(6))).toLocaleTimeString() + "" + " - " + "" + new Date(parseInt(row.EndDateTime.substr(6))).toLocaleTimeString() + "";
+                           }
+                       }
+
+
+                ]
+            });
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+    function Fill_PatientInquirySlot1(lstPatientInquiry) {
+        try {
+            $("#tblInquiryScheduleSlot1").dataTable({
+                "bProcessing": true,
+                "aaData": lstPatientInquiry,
+                clear: true,
+                "deferRender": true,
+                "destroy": true,
+                "searching": false,
+                "ordering": false,
+                "paging": false,
+                //pageLength: 100,
+                //lengthMenu: [[25, 50, 100, 100000], [25, 50, 100, "All"]],
+                autoFill: false,
+                //"lengthMenu": [[03, 05, 10, 25, 50, -1], [03, 05, 10, 25, 50, "All"]],
+                //"lengthMenu": [[20], [20]],
+                "aoColumns": [
+                    { "mData": "InquiryScheduleSlotId", className: "hidden" },
+                    {
+                        mRender: function (data, type, row) {
+                            if (row.IsBooked) {
+                                return '<input id="' + row.InquiryScheduleSlotId + '" disabled name =\"chkAppointmentSlot\" style =\"width:18px;height:18px;\" type=\"checkbox\" onchange =\"SelectSlots(this.checked,this.id);\" /> ';
+                            }
+                            else {
+                                return '<input id="' + row.InquiryScheduleSlotId + '" name =\"chkAppointmentSlot\" style =\"width:18px;height:18px;\" type=\"checkbox\" onchange =\"SelectSlots(this.checked,this.id);\" /> ';
+                            }
+                        }
+                    },
+                    { "mData": "SlotNo" },
+                    //{
+                    //    mRender: function (data, type, row) {
+                    //        if (row.IsOverBooking) {
+                    //            return "Over Booking";
+                    //        } else {
+                    //            return "Normal Booking";
+                    //        }
+                    //    }
+                    //},
+                    {
+                        mRender: function (data, type, row) {
+                            var abc = "" + new Date(parseInt(row.StartDateTime.substr(6))).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                            }) + "" + " - " + "" + new Date(parseInt(row.EndDateTime.substr(6))).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                            }) + "";
+                            return '<span style="font-weight:bold;">' + abc + '</span>';//"" + new Date(parseInt(row.StartDateTime.substr(6))).toLocaleTimeString() + "" + " - " + "" + new Date(parseInt(row.EndDateTime.substr(6))).toLocaleTimeString() + "";
+                        }
+                    }
+
+
+                ]
+            });
+
+        } catch (e) {
+            console.log(e.message);
+        }
+    }
+
+    function SelectSlots(checked, InquiryScheduleSlotId) {
+       // lstSlotSaveArray = new Array();
+        if (checked == true) {
+            //for (var i = 0; i < lstSlots.length; i++) {
+
+            //    if (lstSlots[i].InquiryScheduleSlotId == InquiryScheduleSlotId) {
+            //        slotId = lstSlots[i].InquiryScheduleSlotId;
+
+            //        var result = $('#tblInquiryScheduleSlot').DataTable();
+            //        //Table.row($("#" + Id).closest('tr')).remove().draw();
+            //        /*result.search(slotId).draw();*/
+            //        $("#" + slotId).setValue(true);
+            //       /* result.search('').draw();*/
+            //        var obj = new Object();
+            //        lstSlotSaveArray.push(lstSlots[i]);
+            //    }
+            //}
+            let obj = new Object();
+            obj.PatientInquiryDetailId = 0;
+            obj.PatientInquiryId = 0;
+            obj.InquiryScheduleSlotId = InquiryScheduleSlotId;
+            if (modelData != null && modelData.PatientInquiryDetails != undefined && modelData.PatientInquiryDetails.length > 0) {
+                for (i = 0; i < modelData.PatientInquiryDetails.length; i++) {
+                    if (modelData.PatientInquiryDetails[i].InquiryScheduleSlotId == InquiryScheduleSlotId) {
+                        obj.PatientInquiryDetailId = modelData.PatientInquiryDetails[i].PatientInquiryDetailId;
+                        obj.PatientInquiryId = modelData.PatientInquiryDetails[i].PatientInquiryDetailId;
+                        break;
+                    }
+                }
+            }
+            lstSlotSaveArray.push(obj);
+            $("#" + InquiryScheduleSlotId).setValue(true);
+            $("#" + InquiryScheduleSlotId).enable();
+        }
+        else {
+            for (var i = 0; i < lstSlotSaveArray.length; i++) {
+                if (lstSlotSaveArray[i].InquiryScheduleSlotId == InquiryScheduleSlotId) {
+                    lstSlotSaveArray.splice(i, 1);
+                    $("#" + InquiryScheduleSlotId).setValue(false);
+                }
+            }
+        }
+    }
+
+    function ResetAfterSave() {// By Atta
+        Clear();
+        EnabledField();
+        Fill_PatientInquirySlot(new Array());
+        Fill_PatientInquirySlot1(new Array());
+        $('#tblTotalSlots tbody').empty();
+        $('#tblTotalFreeSlots tbody').empty();
+        $('#tblTotalBookedSlots tbody').empty();
+        $("#dpkAppointmentDate").setValue(new Date().toLocaleDateString());
+    }
+
+
+
+    $('#frmPatientInquiry').submit(function (e) {
+
+        e.preventDefault();
+        //$("#ddl_DepartmentComponent").enable();
+        var counter = 0;
+        //if (!$("#ddl_InquiryOn").validate(MSG_REQ)) counter++;
+
+        if ($("#txtMobileNo").getValue() == null || $("#txtMobileNo").getValue() === "") {
+            ShowMessage(1, "Please enter Mobile No");
+            $("#txtMobileNo").focus();
+            return;
+        }
+
+        if ($("#txtFirstName").getValue() == null || $("#txtFirstName").getValue() === "") {
+            ShowMessage(1, "Please enter Patient Name");
+            $("#txtFirstName").focus();
+            return;
+        }
+        if ($("#txtLastName").getValue() == null || $("#txtLastName").getValue() === "") {
+            ShowMessage(1, "Please enter Patient Last Name");
+            $("#txtLastName").focus();
+            return;
+        }
+
+
+        if ($("#ddl_InquiryOn").getValue() == null || $("#ddl_InquiryOn").getValue() === "") {
+            ShowMessage(1, "Please Select Inquiry On");
+            $("#ddl_InquiryOn").select2('open');
+            return;
+        }
+
+        if ($("#ddl_Shift").getValue() == null || $("#ddl_Shift").getValue() === "") {
+            ShowMessage(1, "Please Select Shift");
+            $("#ddl_Shift").select2('open');
+            return;
+        }
+
+        //if (!$("#ddl_DepartmentComponent").validate(MSG_REQ)) counter++;
+        if ($("#ddl_DepartmentComponent").getValue() == null || $("#ddl_DepartmentComponent").getValue() === "") {
+            ShowMessage(1, "Please select OPD / Doctor");
+            $("#ddl_DepartmentComponent").select2('open');
+            return;
+        }
+        if ($("#ddl_AppointmentType").getValue() == null || $("#ddl_AppointmentType").getValue() === "") {
+            ShowMessage(1, "Please select Appointment Type");
+            $("#ddl_AppointmentType").select2('open');
+            return;
+        }
+        debugger;
+        if (!ValidateSelectedSlots()) return;
+        //if (!$("#ddl_AppointmentType").validate(MSG_REQ)) counter++;
+        // if (!$("#ddl_Speciality").validate(MSG_REQ)) counter++;
+        if (!$("#dpkAppointmentDate").validate(MSG_REQ)) counter++;
+        if (!$("#ddl_PatientCategory").validate(MSG_REQ)) counter++;
+        if (!$("#txtFirstName").validate(MSG_REQ)) counter++;
+        if (!$("#txtLastName").validate(MSG_REQ)) counter++;
+        
+        //if (!$("#ddl_Gender").validate(MSG_REQ)) counter++;
+        //if (!$("#ddl_Nationality").validate(MSG_REQ)) counter++;
+        //if (!$("#txtMobileNo").validate(MSG_REQ)) counter++;
+
+        //if ($("#ddl_SubTitle").getValue() != "") {
+        //    if (!$("#txtFatherName").validate(MSG_REQ)) counter++;
+
+        //};
+
+        //let qid = $("#txtQID").getValue();
+        //let passport = $("#txtPassportNo").getValue();
+        //let visa = $("#txtVisaNo").getValue();
+
+        //if ((qid == null || qid === "" || qid === "0" || qid === 0) &&
+        //    (passport == null || passport === "" || passport === "0" || passport === 0) &&
+        //    (visa == null || visa === "" || visa === "0" || visa === 0)) {
+        //    ShowMessage(1, "Please enter at least QID, Passport No, or Visa No");
+        //    $("#txtQID").focus();
+        //    return;
+        //}
+
+        var year = $("#txtYear").getValue();
+        var month = $("#txtMonth").getValue();
+        var day = $("#txtDay").getValue();
+        var hour = $("#txtHour").getValue();
+
+        //var isDOBAvailable = $("#chkDOB").getValue();
+        //if (!isDOBAvailable) {
+        //    if (!$("#dpkDOB").validate(MSG_REQ)) counter++;
+        //    if (year == "0" && month == "0" && day == "0" && hour == "0") {
+        //        ShowMessage('1', "Please enter age");
+        //        $("#txtYear").focus();
+        //        return;
+        //    }
+        //}
+        //if (counter > 0) return;
+        var age = "";
+        if (year == 0 && month == 0 && day ==0) {
+            age = null;
+        }
+        else if (year != 0 && month != 0 && day != 0) {
+        age = year + " Y " + month + " M ";
+        }
+        else if (year != 0 && month == 0 && day == 0) {
+            age = year + " Y ";
+        }
+        else if (year == 0 && month != 0 && day == 0) {
+            age =  month + " M ";
+        }
+        else if (year == 0 && month == 0 && day != 0) {
+            age = day + " D ";
+        }
+        else if (year != 0 && month != 0) {
+            age = year + " Y " + month + " M ";
+        }
+        else if (year == 0 && month != 0 && day != 0) {
+        age = month + " M " + day + " D ";
+        }
+
+
+        if ($("#chkIsConfirmed").getValue()) {
+            if (lstSlotSaveArray.length <= 0) {
+                ShowMessage('1', "please select slot for appointment.")
+                return;
+            }
+        } else {
+            if ($("#chkIsOnChance").getValue() == false) {
+                if (lstSlotSaveArray.length <= 0) {
+                    ShowMessage('1', "please select slot for appointment.")
+                    return;
+                }
+            }
+        }
+        if (age != null) {
+            $("#txtPatientAge").setValue(age);
+        }
+
+        var isInternalRef = false;
+        if ($("#txtEmplyeeId").getValue() != 0) {
+            isInternalRef = true;
+        }
+        var dateStrings = $("#dpkDOB").getValue();
+        var parts = dateStrings.split('/');
+        var dayp = parseInt(parts[0], 10);
+        var monthp = parseInt(parts[1], 10);
+        var yearp = parseInt(parts[2], 10);
+        var dobs = monthp + "/" + dayp + "/" + yearp;
+
+        if (!chkFutureDate(dobs)) return;
+
+        var person = {
+            'PersonId': $("#txtPersonId").getValue(),
+            'FistName': $("#txtFirstName").getValue().trimEnd(),
+            'LastName': $("#txtLastName").getValue().trimEnd(),
+            'GenderProfileId': $("#ddl_Gender").getValue(),
+            'Mobile1': $("#txtMobileNo").getValue(),
+            'Mobile2': $("#txtMobileNo2").getValue(),
+            'DOB': dobs,
+            'CNIC': $("#txtQID").getValue(),
+            'TitleId': $("#ddl_Title").getValue(),
+            'Email': $("#txtEmail").getValue(),
+            'NationalityId': $("#ddl_Nationality").getValue(),
+            'SubTitleId': $("#ddl_SubTitle").getValue(),
+            'FatherName': $("#txtFatherName").getValue(),
+            'MiddleName': $("#txtMiddleName").getValue().trimEnd(),
+            'MiddleName2': $("#txtMiddleName2").getValue().trimEnd(),
+            'MiddleName3': $("#txtMiddleName3").getValue().trimEnd(),
+            'VisaNo': $("#txtVisaNo").getValue().trimEnd(),
+            'PassportNo': $("#txtPassportNo").getValue().trimEnd()
+        };
+        var patient = {
+            'PatientId': $("#txtPatientId").getValue(),
+            'FirstName': $("#txtFirstName").getValue().trimEnd(),
+            
+            'GenderProfileId': $("#ddl_Gender").getValue(),
+            'Mobile1': $("#txtMobileNo").getValue(),
+            'Mobile2': $("#txtMobileNo2").getValue(),
+            'DOB': dobs,
+            'CNIC': $("#txtQID").getValue(),
+            'TitleId': $("#ddl_Title").getValue(),
+            'Email': $("#txtEmail").getValue(),
+            'NationalityId': $("#ddl_Nationality").getValue(),
+            'MiddleName': $("#txtMiddleName").getValue().trimEnd(),
+            'MiddleName2': $("#txtMiddleName2").getValue().trimEnd(),
+            'MiddleName3': $("#txtMiddleName3").getValue().trimEnd(),
+            'VisaNo': $("#txtVisaNo").getValue().trimEnd(),
+            'PassportNo': $("#txtPassportNo").getValue().trimEnd()
+        };
+        var objPatInquiry = new Object();
+        objPatInquiry.PatientInquiryId = $("#txtPatientInquiryId").getValue();
+        objPatInquiry.InquiryShiftId = $("#ddl_Shift").getValue();
+        objPatInquiry.FromInquiryScheduleSlotId = $("#txtFromInquiryScheduleSlotId").getValue();
+        objPatInquiry.InquiryOnProfileId = $("#ddl_InquiryOn").getValue();
+        objPatInquiry.DepartmentComponentId = $("#ddl_DepartmentComponent").getValue();
+        //objPatInquiry.SpecialityProfileId = $("#ddl_Speciality").getValue();
+        objPatInquiry.AppointmentDate = $("#dpkAppointmentDate").getValue();
+        objPatInquiry.IsNewPatient = $("#rdbNewPatient").getValue();
+        //objPatInquiry.IsConfirmed = $("#chkIsConfirmed").getValue();
+        objPatInquiry.IsOnChance = $("#chkIsOnChance").getValue();
+        objPatInquiry.PatientAge = $("#txtPatientAge").getValue();
+        objPatInquiry.PatientAgeYear = $("#txtYear").getValue();
+        objPatInquiry.PatientAgeMonth = $("#txtMonth").getValue();
+        objPatInquiry.PatientAgeDay = $("#txtDay").getValue();
+        objPatInquiry.PatientAgeHour = $("#txtHour").getValue();
+        objPatInquiry.RefPersonName = $("#txtRefPersonName1").getValue();
+        objPatInquiry.PatientId = $("#txtPatientId").getValue();
+        objPatInquiry.Remarks = $("#txtRemarks").getValue();
+        objPatInquiry.ScheduleTypeProfileId = $("#txtScheduleTypeId").getValue();
+        objPatInquiry.AppointmentTypeProfileId = $("#ddl_AppointmentType").getValue();
+        objPatInquiry.BillCategoryProfileId = $("#ddl_PatientCategory").getValue();
+        if ($("#txtEmplyeeId").getValue() != 0) {
+            objPatInquiry.RefEmployeeId = $("#txtEmplyeeId").getValue();
+            objPatInquiry.IsInternalRef = true;
+        }
+
+        if ($("#txtPartyLocationId1").getValue() != 0)
+            objPatInquiry.RefPartyLocationId = $("#txtPartyLocationId1").getValue();
+        objPatInquiry.InquiryScheduleSlotId = slotId;
+        objPatInquiry.Person = person;
+        objPatInquiry.Patient = patient;
+        if (lstSlotSaveArray.length == 0) {
+            ShowMessage('1', "please select slot for appointment.")
+            return;
+        }
+        objPatInquiry.PatientInquiryDetails = lstSlotSaveArray;
+
+        //var data = JSON.stringify({ obj: formData });
+        //var _data = "{obj:" + JSON.stringify(objPatInquiry) + "}"
+        var data = JSON.stringify({ obj: objPatInquiry, InquirySave: InquirySave });
+        $.AjaxJsonRequest(this.action, data, function (msg) {
+            ShowMessage(msg.mode.MessageMode, msg.mode.MessageText);
+            
+            if (msg.mode.MessageMode == "4") {
+                if (InquirySave == "Clinic") {
+                    //ResetAfterSave(); // By ATta
+                    RefreshView();
+                    //PrintPatientInquiry(msg.PatientInquiryId);
+                }
+                else if (InquirySave == "OPD") {
+                    //PrintPatientInquiry(msg.PatientInquiryId);
+                }
+            } else if (msg.mode.MessageMode == "1") {
+                GetAllSlotsByDepartmentComponentDate();
+            }
+
+        });
+    });
+    function PrintPatientInquiry(patientInquiryId) {
+        var rptURL = '';
+        //if (InquirySave == "OPD") {
+        rptURL = '@Url.Content("~/HMS/Report/PrintOPDPatientInquiry")?Id=' + patientInquiryId;
+        @*} else if (InquirySave == "Clinic") {
+            rptURL = '@Url.Content("~/OPD/Report/PrintOPDPatientReceipt")?Id=' + patientOrderId;
+        }*@
+       // OpenPrintPreview(rptURL);
+        window.open(rptURL, '_blank');
+    }
+    function RefreshView() {
+        if (InquirySave == "Clinic") {
+           // if (returnView == "APPVIEW")
+                window.location.href = '@Url.Action("PatientAppointNew", "InquiryStatus")';
+            @*else
+                window.location.href = '@Url.Action("ClinicList", "InquiryStatus")';*@
+        }
+        else if (InquirySave == "OPD") {
+            window.location.href = '@Url.Action("OPDList", "PatientInquiry")';
+        }
+    }
+    function Clear() {
+        //document.getElementById("frmPatientInquiry").reset();
+        $("input").each(function () {
+
+            if (this.id != "chkDOB") {
+                $(this).clear();
+            }
+            if (this.id == "dpkDOB") {
+                $(this).setValue('__/__/____');
+            }
+            if (this.id == "txtYear" || this.id == "txtMonth" || this.id == "txtDay") {
+                CalculateAge();
+            }
+            if (this.id == "dpkAppointmentDate") {
+                $(this).setValue(ConvertToMonthDayYearFormat(new Date()));
+            }
+
+        });
+        $("textarea").each(function () {
+            $(this).clear();
+        });
+        $("select[name!='ddl_DepartmentGroup']").each(function () {
+            if (this.id != "ddl_InquiryOn" && this.id != "ddl_Shift") {
+                $(this).clear();
+            }
+
+        });
+    }
+    function showRef(prefix) {
+        if (prefix == 'INT') {
+            $("#divInternalRef").show();
+            $("#divExternalRef").hide();
+            if ('@ViewBag.ExternalRefId' != null && '@ViewBag.ExternalRefId' != '') {
+                $("#txtPartyLocationId1").setValue('@ViewBag.ExternalRefId');
+                $("#txtPartyLocationName1").setValue('@ViewBag.ExternalRefName');
+            } else {
+                $("#txtPartyLocationId1").setValue(0);
+                $("#txtPartyLocationName1").clear();
+            }
+        }
+        else {
+            $("#divExternalRef").show();
+            $("#divInternalRef").hide();
+            if ('@ViewBag.InternalRefId' != null && '@ViewBag.InternalRefId' != '') {
+                $("#txtEmplyeeId").setValue('@ViewBag.InternalRefId');
+                $("#txtEmployeeName").setValue('@ViewBag.InternalRefName');
+            } else {
+                $("#txtEmplyeeId").setValue(0);
+                $("#txtEmployeeName").clear();
+            }
+        }
+
+
+    }
+
+    function PatientPopUp(e) {
+        if (e.keyCode == 13) {
+            var keyWord = $("#txtSearchPatient").getValue();
+            if (keyWord != "" || keyWord != undefined) {
+                $("#loading-image").show();
+                var _url = '/Common/GetPatientBySearch';
+                //var _url = '@Url.Action("GetPatientBySearch", "Common")';
+                var data = JSON.stringify({ keyWord: keyWord });
+                $.AjaxJsonRequest(_url, data, function (msg) {
+
+                    var lstPatient = msg.lstPatient;
+                    if (lstPatient != null) {
+                        $("#modalboxPatient").show("modal");
+                        $('#tblPopUpPatient').dataTable().fnDestroy(); // Destroy DataTables from current table
+                        Fill_PatientPopUp(lstPatient);
+                        $("#loading-image").hide();
+                    }
+                    else {
+                        ShowMessage(1, "No Record Found");
+                        $("#modalboxPatient").hide("modal");
+                        $("#loading-image").hide();
+                    }
+                });
+            }
+        }
+    }
+
+    function AddPatient(patientData) {
+        
+        $("#modalboxPatient").hide("modal");
+        //$("#txtPatientId").setValue(id);
+        //$("#rdbOldPatient").setValue(true);
+      //  $("#txtPatientId").trigger("onchange");
+        $("#txtSearchPatient").setValue("");
+        const obj = JSON.parse(patientData);
+        Search(obj.PatientId);
+        PatientBalance(obj.PatientId);
+        //$("#txtPatientId").enable();
+    }
+    function PatientPopupClose() {
+        $("#modalboxPatient").hide("modal");
+    }
+
+
+    function PatientBalancePopupClose() {
+        $("#modalboxPatientBalance").hide("modal");
+    }
+
+    function OpenPrintPreview(rptLink) {
+
+        if (isAdsServerFound) {
+            $("#txtPath").setValue(rptLink);
+
+            $("#objPrintPreview").attr("data", "http://" + window.location.host + rptLink + "#toolbar=0&scrollbar=0&navpanes=1");
+
+            $("#objPrintPreview").load("http://" + window.location.host + rptLink + "#toolbar=0&scrollbar=0&navpanes=1");
+
+            $("#modalboxPrintPreview").show("model");
+
+        }
+        else {
+            window.open("http://" + window.location.host + rptLink, '_blank');
+        }
+
+    }
+
+    function ValidateSelectedSlots() {
+        let selectedInquiryIds = lstSlotSaveArray.map(b => parseInt(b.InquiryScheduleSlotId, 10));
+        let selectedSlots = selectedInquiryIds
+            .map(id => lstSlots.find(a => a.InquiryScheduleSlotId === id)?.SlotNo)
+            .filter(slot => slot !== undefined);
+
+        // Sort the slot numbers
+        selectedSlots.sort((a, b) => a - b);
+
+        // Function to check if slots are consecutive
+        function isConsecutive(arr) {
+            for (let i = 1; i < arr.length; i++) {
+                if (arr[i] !== arr[i - 1] + 1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Validate selection
+        if (!isConsecutive(selectedSlots)) {
+            ShowMessage(1, "You can only select consecutive slots.");
+            return false;
+        } else {
+            return true;
+        }
+    }
+</script>

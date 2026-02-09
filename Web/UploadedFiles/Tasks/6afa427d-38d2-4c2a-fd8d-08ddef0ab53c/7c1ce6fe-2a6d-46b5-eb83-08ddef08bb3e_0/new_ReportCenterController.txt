@@ -1,0 +1,174 @@
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+using Semantech.BAL;
+using Semantech.BAL.Repository.ERP;
+using Semantech.BAL.Repository.ERP.OT;
+using Semantech.BO.ERP.ADO;
+using Semantech.BO.GlobalInfo;
+using Semantechs.MVC.Helper.Utility;
+using Semantechs.MVC.UI.Controllers;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web.Mvc;
+using System.Web.Script.Serialization;
+
+namespace Semantechs.MVC.UI.Areas.RCM.Controllers
+{
+    public class ReportCenterController : BaseController
+    {
+        public ActionResult Index()
+        {
+            try
+            {
+                GetAllLOV();
+                ViewBag.ddl_Department = new DepartmentRepository().GetAll(false);
+                if (ViewBag.ddl_Department == null)
+                    ViewBag.ddl_Department = new List<SelectListItem>();
+                
+                return View();
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+
+            }
+        }
+
+        private void GetAllLOV()
+        {
+            try
+            {
+                ViewBag.ddl_DepartmentComponent = new DepartmentComponentRepository().GetByDepartmentGroupPrefix("CLNGRP", false);
+                if (ViewBag.ddl_DepartmentComponent == null)
+                    ViewBag.ddl_DepartmentComponent = new List<SelectListItem>();
+                ViewBag.ddl_Patient = new PatientRepository().GetAll(false);
+                if (ViewBag.ddl_Patient == null)
+                    ViewBag.ddl_Patient = new List<SelectListItem>();
+                ViewBag.ddl_User = new UserRepository().GetAllEmployee(false);
+                if (ViewBag.ddl_User == null)
+                    ViewBag.ddl_User = new List<SelectListItem>();
+
+                ViewBag.ddl_labUser = new UserRepository().GetFilterUser(false);
+                if (ViewBag.ddl_labUser == null)
+                    ViewBag.ddl_labUser = new List<SelectListItem>();
+
+                ViewBag.ddl_radUser = new UserRepository().GetFilterUser(false);
+                if (ViewBag.ddl_radUser == null)
+                    ViewBag.ddl_radUser = new List<SelectListItem>();
+
+                ViewBag.ddl_labDepartment = new DepartmentRepository().GetAll(false);
+                if (ViewBag.ddl_labDepartment == null)
+                    ViewBag.ddl_labDepartment = new List<SelectListItem>();
+
+                var objDepartment = new DepartmentRepository().GetByShortName("PATH", false);
+                if (objDepartment != null)
+                {
+                    ViewBag.lablstSection = new SectionRepository().GetByDepartmentId(objDepartment.DepartmentId, false);
+                    ViewBag.ddl_labDepartmentId = objDepartment.DepartmentId;
+                }
+
+
+                ViewBag.ddl_radDepartment = new DepartmentRepository().GetAll(false);
+                if (ViewBag.ddl_radDepartment == null)
+                    ViewBag.ddl_radDepartment = new List<SelectListItem>();
+                var objRadioDepartment = new DepartmentRepository().GetByShortName("RADI", false);
+                if (objRadioDepartment != null)
+                {
+                    ViewBag.radlstSection = new SectionRepository().GetByDepartmentId(objRadioDepartment.DepartmentId, false);
+                    ViewBag.ddl_radDepartmentId = objRadioDepartment.DepartmentId;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                ViewBag.isError = ex.Message;
+            }
+        }
+        public string GetDepartmentRevenueSummary(string fromDate, string toDate,int departmentId
+           //string userId, string shiftId, string locationId, string refPersonName, string testId, string sectionString, string DepartmentId
+           )
+        {
+            var lstRevenueSummaryQueue = (object)null;
+            var lstRevenueSummaryByDepartmentIdQueue = (object)null;
+            var lstRevenueCollectionQueue = (object)null;
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
+            DataSet ds = null;
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+                lpm.Add(new ParameterList("FromDate", fromDate));
+                lpm.Add(new ParameterList("ToDate", toDate));                    
+                if (departmentId!=0)
+                {
+                    lpm.Add(new ParameterList("DepartmentId", departmentId));
+                }
+                ds = new RevenueSummaryRepository().GetDepartmentRevenueSummary(lpm, false);
+                if (ds != null && ds.Tables.Count > 0)
+                {
+                    if (ds.Tables.Count > 1 && ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+                    {
+                        if (departmentId != 0)
+                        {
+                            lstRevenueSummaryByDepartmentIdQueue = ds.Tables[0].AsEnumerable()
+                                .Select(item => new
+                                {
+                                    FromDate = item.Field<DateTime?>("FROMDATE"),
+                                    ToDate = item.Field<DateTime?>("TODATE"),
+                                    TotalOrder = item.Field<int?>("TotalOrder") ?? 0,
+                                    Amount = item.Field<decimal?>("Amount") ?? 0,
+                                    DiscountAmount = item.Field<decimal?>("DiscountAmount") ?? 0,
+                                    GrossAmount = item.Field<decimal?>("GrossAmount") ?? 0,
+                                    NetReceivable = item.Field<decimal?>("NetReceivable") ?? 0,
+                                    ComponentName = item.Field<string>("ComponentName"),
+                                    DepartmentComponentId = item.Field<int?>("DepartmentComponentId") ?? 0,
+                                    ShortName = item.Field<string>("ShortName")
+                                }).ToList();
+                        }
+                        else
+                        {
+                            lstRevenueSummaryQueue = ds.Tables[0].AsEnumerable()
+                                .Select(item => new
+                                {
+                                    FromDate = item.Field<DateTime?>("FROMDATE"),
+                                    ToDate = item.Field<DateTime?>("TODATE"),
+                                    TotalOrder = item.Field<int?>("TotalOrder") ?? 0,
+                                    Amount = item.Field<decimal?>("Amount") ?? 0,
+                                    DiscountAmount = item.Field<decimal?>("DiscountAmount") ?? 0,
+                                    GrossAmount = item.Field<decimal?>("GrossAmount") ?? 0,
+                                    NetReceivable = item.Field<decimal?>("NetReceivable") ?? 0,
+                                    DepartmentName = item.Field<string>("DepartmentName"),
+                                    DepartmentCode = item.Field<string>("DepartmentCode"),
+                                    ShortName = item.Field<string>("ShortName")
+                                }).ToList();
+                        }
+                    }
+                    var collectionTableIndex = ds.Tables.Count > 1 ? 1 : 0;
+
+                    if (ds.Tables[collectionTableIndex] != null && ds.Tables[collectionTableIndex].Rows.Count > 0)
+                    {
+                        lstRevenueCollectionQueue = ds.Tables[collectionTableIndex].AsEnumerable()
+                            .Select(item => new
+                            {
+                                Type = item.Field<string>("Type"),
+                                Credit = item.Field<decimal?>("Credit") ?? 0,
+                                Cash = item.Field<decimal?>("Cash") ?? 0
+                            }).ToList();
+                    }
+
+                    return objJSS.Serialize(new { lstRevenueSummaryQueue, lstRevenueCollectionQueue, lstRevenueSummaryByDepartmentIdQueue, MessageText = "" });
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                return objJSS.Serialize(new { lstRevenueSummaryQueue, MessageText = ex.Message });
+            }
+            return objJSS.Serialize(new { lstRevenueSummaryQueue, MessageText = "" });
+        }
+
+
+    }
+}

@@ -1,0 +1,1014 @@
+using Semantech.BAL;
+using Semantech.BAL.Code;
+using Semantech.BAL.Repository.ERP;
+using Semantech.BAL.Repository.ERP.FIN;
+using Semantech.BO.ERP.ADO;
+using Semantech.BO.GlobalInfo;
+
+using Semantechs.MVC.UI.Controllers;
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Resources;
+using System.Threading;
+using System.Web.Mvc;
+using System.Web.Script.Serialization;
+
+namespace Semantechs.MVC.UI.Areas.eClinic.Controllers
+{
+    public class ProcedureInvoiceController : BaseController
+    {
+        //
+        // GET: /eClinic/ProcedureInvoice/
+        public ActionResult Index()
+        {
+
+            ViewBag.IsDisableDiscountForReception = BaseRepository.GetLocationSetting.IsDisableDiscountForReception;
+            string rolePrefix = GlobalObject.LoginObject.LoginUser.Role.RolePrefix;
+            ViewBag.RolePrefix = rolePrefix;
+            ViewBag.NewInvoice = "True";
+            if (TempData["department"] != null)
+            {
+                var objDepartment = new DepartmentRepository().GetByShortName(TempData["department"].ToString(), false);
+                if (objDepartment != null)
+                {
+                    ViewBag.DepartmentId = objDepartment.DepartmentId;
+                    ViewBag.department = objDepartment.ShortName;
+                }
+            }
+            if (TempData["Dental"] != null)
+            {
+                FillAllLookups("CLNGRP");
+                ViewBag.NewInvoice = "False";
+                PatientOrder OPDPatientOrder = TempData["Dental"] as PatientOrder;
+                ViewBag.OPDPatientOrderId = OPDPatientOrder.ParentPatientOrderId;
+
+                var objPatientPrescribeQueuee = new PatientPrescribeQueueRepository().GetByPatientOrderId(OPDPatientOrder.ParentPatientOrderId, false);
+                if (objPatientPrescribeQueuee != null)
+                {
+                    OPDPatientOrder.IsInternalRef = true;
+                    var objEmployee = new EmployeeRepository().GetById(objPatientPrescribeQueuee.ReferToId, false);
+                    ViewBag.EmployeeId = objEmployee.EmployeeId;
+                    ViewBag.EmployeeName = objEmployee.EmployeeName;
+                }
+                if (TempData["department"] != null)
+                    ViewBag.department = TempData["department"];
+                ViewBag.IsDiscount = BaseRepository.GetLocationSetting.IsAllowLabDiscPolicy;
+                ViewBag.IsShowTitle = BaseRepository.GetLocationSetting.IsHideTitleOnReception;
+                ViewBag.IsRecieveAmount = BaseRepository.GetLocationSetting.IsReceivedAmountOnReception;
+                ViewBag.year = OPDPatientOrder.PatientAgeYear;
+                ViewBag.month = OPDPatientOrder.PatientAgeMonth;
+                ViewBag.day = OPDPatientOrder.PatientAgeDay;
+                ViewBag.hour = OPDPatientOrder.PatientAgeHour;
+                ViewBag.RediractToQueue = "Queue";
+                if (TempData["patientAccount"] != null)
+                {
+                    PatientAccount patientAcc = TempData["patientAccount"] as PatientAccount;
+                    ViewBag.PatientAdvance = patientAcc.PatientAdvance;
+                }
+                else
+                {
+                    ViewBag.PatientAdvance = 0;
+                }
+                return View(OPDPatientOrder);
+            }
+            if (TempData["ApprovedInsuranceProcedure"] != null)
+            {
+                FillAllLookups("CLNGRP");
+
+                ViewBag.NewInvoice = "False";
+                PatientOrder OPDPatientOrder = TempData["ApprovedInsuranceProcedure"] as PatientOrder;
+                ViewBag.OPDInsurancePatientOrderId = OPDPatientOrder.ParentPatientOrderId;
+
+                var objPatientPrescribeQueuee = new PatientPrescribeQueueRepository().GetByPatientOrderId(OPDPatientOrder.ParentPatientOrderId, false);
+                if (objPatientPrescribeQueuee != null)
+                {
+                    OPDPatientOrder.IsInternalRef = true;
+                    var objEmployee = new EmployeeRepository().GetById(objPatientPrescribeQueuee.ReferToId, false);
+                    ViewBag.EmployeeId = objEmployee.EmployeeId;
+                    ViewBag.EmployeeName = objEmployee.EmployeeName;
+                }
+                if (TempData["department"] != null)
+                    ViewBag.department = TempData["department"];
+                ViewBag.IsDiscount = BaseRepository.GetLocationSetting.IsAllowLabDiscPolicy;
+                ViewBag.IsShowTitle = BaseRepository.GetLocationSetting.IsHideTitleOnReception;
+                ViewBag.IsRecieveAmount = BaseRepository.GetLocationSetting.IsReceivedAmountOnReception;
+                ViewBag.year = OPDPatientOrder.PatientAgeYear;
+                ViewBag.month = OPDPatientOrder.PatientAgeMonth;
+                ViewBag.day = OPDPatientOrder.PatientAgeDay;
+                ViewBag.hour = OPDPatientOrder.PatientAgeHour;
+                ViewBag.RediractToQueue = "Queue";
+                if (TempData["patientAccount"] != null)
+                {
+                    PatientAccount patientAcc = TempData["patientAccount"] as PatientAccount;
+                    ViewBag.PatientAdvance = patientAcc.PatientAdvance;
+                }
+                else
+                {
+                    ViewBag.PatientAdvance = 0;
+                }
+                return View(OPDPatientOrder);
+            }
+
+            if (TempData["labId"] != null)
+            {
+                ViewBag.NewInvoice = "True";
+
+                FillAllLookups("CLNGRP");
+                //TempData["editPatientOrder"] = new LabPatientOrderRepository().GetById(long.Parse(TempData["labId"].ToString()), false);
+                ViewBag.labId = TempData["labId"];
+                PatientOrder EditPatientOrder = new PatientOrder();
+                EditPatientOrder.PatientOrderOn = DateTime.Now;
+
+
+
+                return View(EditPatientOrder);
+
+            }
+            if (TempData["department"] != null)
+            {
+                ViewBag.department = TempData["department"].ToString();
+            }           
+            FillAllLookups("CLNGRP");
+            PatientOrder objPatientOrder = new PatientOrder();
+            objPatientOrder.PatientOrderOn = DateTime.Now;
+
+            return View(objPatientOrder);
+        }
+
+
+        public ActionResult InsuranceIndex()
+        {
+
+
+            string rolePrefix = GlobalObject.LoginObject.LoginUser.Role.RolePrefix;
+            ViewBag.RolePrefix = rolePrefix;
+            ViewBag.NewInvoice = "True";
+            if (TempData["department"] != null)
+            {
+                var objDepartment = new DepartmentRepository().GetByShortName(TempData["department"].ToString(), false);
+                if (objDepartment != null)
+                {
+                    ViewBag.DepartmentId = objDepartment.DepartmentId;
+                    ViewBag.department = objDepartment.ShortName;
+                }
+            }
+
+            if (TempData["ApprovedInsuranceProcedure"] != null)
+            {
+                FillAllLookups("CLNGRP");
+
+                ViewBag.NewInvoice = "False";
+                PatientOrder OPDPatientOrder = TempData["ApprovedInsuranceProcedure"] as PatientOrder;
+                ViewBag.OPDInsurancePatientOrderId = OPDPatientOrder.ParentPatientOrderId;
+
+                var objPatientPrescribeQueuee = new PatientPrescribeQueueRepository().GetByPatientOrderId(OPDPatientOrder.ParentPatientOrderId, false);
+                if (objPatientPrescribeQueuee != null)
+                {
+                    OPDPatientOrder.IsInternalRef = true;
+                    var objEmployee = new EmployeeRepository().GetById(objPatientPrescribeQueuee.ReferToId, false);
+                    ViewBag.EmployeeId = objEmployee.EmployeeId;
+                    ViewBag.EmployeeName = objEmployee.EmployeeName;
+                }
+                if (TempData["department"] != null)
+                    ViewBag.department = TempData["department"];
+                ViewBag.IsDiscount = BaseRepository.GetLocationSetting.IsAllowLabDiscPolicy;
+                ViewBag.IsShowTitle = BaseRepository.GetLocationSetting.IsHideTitleOnReception;
+                ViewBag.IsRecieveAmount = BaseRepository.GetLocationSetting.IsReceivedAmountOnReception;
+                ViewBag.year = OPDPatientOrder.PatientAgeYear;
+                ViewBag.month = OPDPatientOrder.PatientAgeMonth;
+                ViewBag.day = OPDPatientOrder.PatientAgeDay;
+                ViewBag.hour = OPDPatientOrder.PatientAgeHour;
+                ViewBag.RediractToQueue = "Queue";
+                if (TempData["patientAccount"] != null)
+                {
+                    PatientAccount patientAcc = TempData["patientAccount"] as PatientAccount;
+                    ViewBag.PatientAdvance = patientAcc.PatientAdvance;
+                }
+                else
+                {
+                    ViewBag.PatientAdvance = 0;
+                }
+                return View(OPDPatientOrder);
+            }
+
+            if (TempData["labId"] != null)
+            {
+                ViewBag.NewInvoice = "True";
+
+                FillAllLookups("CLNGRP");
+                //TempData["editPatientOrder"] = new LabPatientOrderRepository().GetById(long.Parse(TempData["labId"].ToString()), false);
+                ViewBag.labId = TempData["labId"];
+                PatientOrder EditPatientOrder = new PatientOrder();
+                EditPatientOrder.PatientOrderOn = DateTime.Now;
+
+
+
+                return View(EditPatientOrder);
+
+            }
+            if (TempData["department"] != null)
+            {
+                ViewBag.department = TempData["department"].ToString();
+            }
+            FillAllLookups("CLNGRP");
+            PatientOrder objPatientOrder = new PatientOrder();
+            objPatientOrder.PatientOrderOn = DateTime.Now;
+
+            return View(objPatientOrder);
+        }
+        public class JsonResponseResult
+        {
+            public object Id;
+            public bool IsPrintPatientOrder;
+            public MessageObject msgObj;
+            public bool isa4;
+        }
+        public ActionResult SaveRecord(PatientOrder obj)
+        {
+            JsonResponseResult res = new JsonResponseResult();
+
+            try
+            {
+
+                object returnId = new PatientOrderRepository().Save(ref obj);
+                CommonRepository.GetDataForUserAvtivity<PatientOrder>(obj, ref objUserActivityLog);
+
+                //if (Convert.ToInt64(returnId) <= 0)
+                //    res.Id = returnId;
+                //else
+                res.Id = obj.PatientOrderId;
+
+
+                res.msgObj = new MessageObject(MessageTypeMode.SAVED);
+
+                bool isa4 = BaseRepository.GetOrginizationSetting.IsA4PatientInvoice;
+                if (isa4)
+                {
+                    res.isa4 = isa4;
+                }
+                else
+                {
+                    res.isa4 = false;
+                }
+            }
+
+            catch (Exception ex)
+            {
+                res.msgObj = new MessageObject(MessageTypeMode.ERROR, ex.Message);
+                return Json(res, JsonRequestBehavior.AllowGet);
+            }
+            return Json(res, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult SaveRecordInsurance(List<PatientOrder> listObject)
+        {
+            List<JsonResponseResult> listres = new List<JsonResponseResult>();
+
+            try
+            {
+                foreach (var Item in listObject)
+                {
+                    var obj = Item;
+                    object returnId = new PatientOrderRepository().Save(ref obj);
+                    CommonRepository.GetDataForUserAvtivity<PatientOrder>(obj, ref objUserActivityLog);
+
+
+                    JsonResponseResult res = new JsonResponseResult();
+                    //if (Convert.ToInt64(returnId) <= 0)
+                    //    res.Id = returnId;
+                    //else
+                    res.Id = obj.PatientOrderId;
+
+
+                    res.msgObj = new MessageObject(MessageTypeMode.SAVED);
+
+                    bool isa4 = BaseRepository.GetOrginizationSetting.IsA4PatientInvoice;
+                    if (isa4)
+                    {
+                        res.isa4 = isa4;
+                    }
+                    else
+                    {
+                        res.isa4 = false;
+                    }
+
+                    listres.Add(res);
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                foreach (var res in listres)
+                {
+                    res.msgObj = new MessageObject(MessageTypeMode.ERROR, ex.Message);
+                    return Json(res, JsonRequestBehavior.AllowGet);
+                }
+
+            }
+            return Json(listres, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult Edit(string Id)
+        {
+            try
+            {
+                PatientOrder objPatientOrder = new LabPatientOrderRepository().GetById(long.Parse(Id), false);
+
+                TempData["labId"] = Id;
+
+                TempData["editPatientOrder"] = objPatientOrder;
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return RedirectToAction("Index");
+            }
+        }
+
+
+
+        public string GetLabOrderData(string Id)
+        {
+            var serviceList = new List<object>();
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+            List<Dictionary<string, string>> lstDic = new List<Dictionary<string, string>>();
+            try
+            {
+                var objPatientOrder = new PatientOrderRepository().GetById(Id, false);
+                if (objPatientOrder != null)
+                {
+                    objPatientOrder.Patient = new PatientRepository().GetById(objPatientOrder.PatientId, false);
+                    objPatientOrder.PatientOrderSet = new PatientOrderSetRepository().GetById(objPatientOrder.PatientOrderSetId, false);
+                    objPatientOrder.Patient.Profile = new ProfileRepository().GetById(objPatientOrder.PatientOrderSet.BillCategoryProfileId, false);
+                }
+                List<ParameterList> lpm = new List<ParameterList>();
+                lpm.Add(new ParameterList("PatientOrderId", Id));
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                lpm.Add(new ParameterList("OrginizationId", BaseRepository.GetLoginOrginizationId()));
+                if (objPatientOrder.PatientOrderSet != null && objPatientOrder.PatientOrderSet.DepartmentComponentId != null)
+                {
+                    var objDepartmentComponent = new DepartmentComponentRepository().GetById(objPatientOrder.PatientOrderSet.DepartmentComponentId, false);
+                    lpm.Add(new ParameterList("DepartmentGroupId", objDepartmentComponent.DepartmentGroupId));
+                }
+                DataTable dt;
+
+                dt = CommonRepository.GetDataTable("GetByBillCategoryProfileIdForProcedureForEdit", "[hms].[procGetPatientOrderForProcedure]", lpm);
+
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        Dictionary<string, string> dic = new Dictionary<string, string>();
+                        for (int j = 0; j < dt.Columns.Count; j++)
+                        {
+                            dic.Add(dt.Columns[j].ColumnName, dt.Rows[i][j].ToString());
+                        }
+                        lstDic.Add(dic);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return string.Empty;
+            }
+
+            return objJSS.Serialize(lstDic);
+        }
+
+        public void FillAllLookups(string departmentGroupPrefix = "")
+        {
+            try
+            {
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.Lov.Nationality] is List<Profile> ddl_Nationality))
+                {
+                    ddl_Nationality = new ProfileRepository().GetByNationality();
+                    if (ddl_Nationality != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.Lov.Nationality, ddl_Nationality, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+                ViewBag.ddl_Nationality = ddl_Nationality;
+                if (ViewBag.ddl_Nationality == null)
+                    ViewBag.ddl_Nationality = new List<SelectListItem>();
+
+
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.Lov.Gender] is List<Profile> ddl_Gender))
+                {
+                    ddl_Gender = new ProfileRepository().GetByGender(false);
+                    if (ddl_Gender != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.Lov.Gender, ddl_Gender, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+                ViewBag.ddl_Gender = ddl_Gender;
+                if (ViewBag.ddl_Gender == null)
+                    ViewBag.ddl_Gender = new List<SelectListItem>();
+
+
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.BillCategory] is List<Profile> ddl_PatientCategory))
+                {
+                    ddl_PatientCategory = new ProfileRepository().GetByBillCategory(false);
+                    if (ddl_PatientCategory != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.BillCategory, ddl_PatientCategory, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+
+                ViewBag.ddl_PatientCategory = ddl_PatientCategory;
+                if (ViewBag.ddl_PatientCategory == null)
+                    ViewBag.ddl_PatientCategory = new List<SelectListItem>();
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.Lov.Title] is List<Title> ddl_Title))
+                {
+                    ddl_Title = new TitleRepository().GetByPersonalTitle(false);
+                    if (ddl_Title != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.Lov.Title, ddl_Title, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+
+                ViewBag.ddl_Title = ddl_Title;
+                if (ViewBag.ddl_Title == null)
+                    ViewBag.ddl_Title = new List<SelectListItem>();
+
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.Lov.SubTitle] is List<Title> ddl_SubTitle))
+                {
+                    ddl_SubTitle = new TitleRepository().GetByRelationalTitle(false);
+                    if (ddl_SubTitle != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.Lov.SubTitle, ddl_SubTitle, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+                ViewBag.ddl_SubTitle = ddl_SubTitle;
+                if (ViewBag.ddl_SubTitle == null)
+                    ViewBag.ddl_SubTitle = new List<SelectListItem>();
+
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.Lov.PayMode] is List<Profile> ddl_PayMode))
+                {
+                    ddl_PayMode = new ProfileRepository().GetByPayMode(false);
+                    if (ddl_PayMode != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.Lov.PayMode, ddl_PayMode, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+                //ddl_PayMode= ddl_PayMode.Where(x => x.ProfilePrefix != "ADTPMD").ToList();
+                ViewBag.ddl_PayMode = ddl_PayMode;
+                if (ViewBag.ddl_PayMode == null)
+                    ViewBag.ddl_PayMode = new List<SelectListItem>();
+
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.Lov.DiscountType] is List<Profile> ddl_DiscountType))
+                {
+                    ddl_DiscountType = new ProfileRepository().GetByProfileTypePrefixList("DISTYP", false);
+                    if (ddl_DiscountType != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.Lov.DiscountType, ddl_DiscountType, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+                ViewBag.ddl_DiscountType = ddl_DiscountType;
+                if (ViewBag.ddl_DiscountType == null)
+                    ViewBag.ddl_DiscountType = new List<SelectListItem>();
+
+                if (!(System.Web.HttpContext.Current.Cache[CacheKeys.Lov.DiscountMode] is List<DiscountMode> ddl_DisMode))
+                {
+                    ddl_DisMode = new DiscountModeRepository().GetAll(false);
+                    if (ddl_DisMode != null)
+                        System.Web.HttpContext.Current.Cache.Insert(CacheKeys.Lov.DiscountMode, ddl_DisMode, null, CacheKeys.CacheExpiry, TimeSpan.Zero);
+                }
+                ViewBag.ddl_DisMode = ddl_DisMode;
+                if (ViewBag.ddl_DisMode == null)
+                    ViewBag.ddl_DisMode = new List<SelectListItem>();
+                var ddl_DepartmentComponent = new DepartmentComponentRepository().GetAll(false);
+                ViewBag.ddl_DepartmentComponent = ddl_DepartmentComponent;
+                if (ViewBag.ddl_DepartmentComponent == null)
+                    ViewBag.ddl_DepartmentComponent = new List<SelectListItem>();
+            }
+            catch (Exception ex)
+            {
+                string ErrorMsg = ex.Message;
+            }
+        }
+
+        public ActionResult GetDiscountMode(string Id)
+        {
+
+            var objPartyList = new List<Party>();
+            //List<DiscountPolicy> lstDiscountPolicy = null;
+
+            try
+            {
+                var discountMode = new DiscountModeRepository().GetById(Id, false);
+                discountMode.Profile = new ProfileRepository().GetById(discountMode.ModeTypeProfileId, false);
+                if (discountMode.Profile.ProfilePrefix == "PATNM")
+                {
+                    objPartyList = new PartyRepository().GetByCompany(false);
+                }
+                //lstDiscountPolicy = new DiscountPolicyRepository().GetByDiscountModeId(Id);
+                return Json(new { objPartyList, discountMode }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+            }
+            //return Json(new { lstDiscountPolicy }, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult SearchPatientById(string patientId)
+        {
+            try
+            {
+                FinancialAssistance fiAssistance = new FinancialAssistance();
+                PatientAccount patientAccount = new PatientAccount();
+                Person objPerson = new Person();
+                Patient objPatient = new PatientRepository().GetById(patientId, false);
+                if (objPatient != null)
+                {
+                    objPerson = null;
+                    if (objPatient.IsFinancialAssistanceRequired)
+                    {
+                        fiAssistance = new FinancialAssistanceRepository().GetByPatientId(objPatient.PatientId, false);
+                    }
+                    patientAccount = new PatientRepository().GetPatientAdvanceByPatientNo(objPatient.PatientId, false);
+                }
+                else
+                {
+                    objPerson = new PersonRepository().GetById(patientId, false);
+                }
+                return Json(new { objPatient, fiAssistance, patientAccount, objPerson }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+            }
+
+        }
+
+        public JsonResult PatientBalance(string patientId)
+        {
+            try
+            {
+                var lstPatient = (object)null;
+                DataTable dt = new PatientRepository().GetPatientBalanceByPatientId(patientId, false);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    lstPatient = (from item in dt.AsEnumerable()
+                                  select new
+                                  {
+                                      PatientOrderId = item.Field<long>("PatientOrderId"),
+                                      PatientOrderOn = item.Field<DateTime>("PatientOrderOn").ToString("dd/MM/yyyy"),
+                                      PatientOrderNo = item.Field<string>("PatientOrderNo"),
+                                      ComponentName = item.Field<string>("ComponentName"),
+                                      ServiceName = item.Field<string>("ServiceName"),
+                                      NetBalance = item.Field<decimal>("NetBalance"),
+                                  }).ToList();
+                }
+                return Json(new { lstPatient }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+            }
+
+        }
+        public ActionResult GetPatientBySearch(string keyWord)
+        {
+
+            try
+            {
+                DataTable dt = new PatientRepository().GetRegisterPatientBySearchKeyword(keyWord, false);
+                var lstPatient = (object)null;
+                if (dt != null)
+                {
+                    lstPatient = (from item in dt.AsEnumerable()
+                                  select new
+                                  {
+                                      PatientId = item.Field<long>("PatientId"),
+                                      PatientName = item.Field<string>("PatientName"),
+                                      PatientNo = item.Field<string>("PatientNo"),
+                                      //PartyLocationId = item.Field<long?>("PartyLocationId"),
+                                      //Party = item.Field<string>("Party"),
+                                      DOB = item.Field<DateTime?>("DOB"),
+                                      Age = item.Field<int?>("Age"),
+                                      Gender = item.Field<string>("Gender"),
+                                      Mobile1 = item.Field<string>("Mobile1")
+                                  }).ToList();
+                }
+                return Json(new { lstPatient }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+            }
+        }
+        public ActionResult GetShiftRecord(string OrderOn)
+        {
+            ShiftRecord objShiftRecord = null;
+            string floorSchedule = "";
+            try
+            {
+                bool isshowFloorInfo = BaseRepository.GetLocationSetting.IsShowFloorInfoOnReception;
+                if (isshowFloorInfo && BaseRepository.GetLocationSetting != null && BaseRepository.GetLocationSetting.IsAllowShiftFlow)
+                {
+                    objShiftRecord = new ShiftRecordRepository().GetByDateAndUserId(BaseRepository.GetLoginUserId(), OrderOn, false);
+                    if (objShiftRecord != null)
+                    {
+                        objShiftRecord.ShiftLocation = new ShiftLocationRepository().GetById(objShiftRecord.ShiftLocationId, false);
+                        List<dynamic> FloorInformationList = new List<dynamic>();
+                        var objJSS = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
+                        List<ParameterList> lpm = new List<ParameterList>();
+                        lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                        lpm.Add(new ParameterList("ShiftId", objShiftRecord.ShiftLocation.ShiftId));
+                        lpm.Add(new ParameterList("Date", Convert.ToDateTime(OrderOn)));
+
+
+
+
+                        DataTable dt = CommonRepository.GetDataTable("BlookFloorList", "hms.procGetComponentStatus", lpm);
+
+                        if (dt != null && dt.Rows.Count > 0)
+                        {
+                            FloorInformationList = (from item in dt.AsEnumerable()
+                                                    select new
+                                                    {
+                                                        BlockFloorId = item.Field<long>("BlockFloorId"),
+                                                        ScheduleTypeProfileId = item.Field<int>("ScheduleTypeProfileId"),
+                                                        FloorNo = item.Field<string>("FloorNo"),
+                                                        Type = item.Field<string>("ScheduleType"),
+                                                        TotalBooking = item.Field<int>("TotalBooking"),
+                                                        TotalBooked = item.Field<int>("TotalBooked"),
+                                                        ReportProceeded = item.Field<int>("TotalReportProceeded"),
+                                                        Load = item.Field<int>("TotalBooked") - item.Field<int>("TotalReportProceeded"),
+                                                        TotalFree = item.Field<int>("TotalFree"),
+                                                    }).ToList<dynamic>();
+
+                            FloorInformationList = FloorInformationList.OrderByDescending(x => x.Type).OrderBy(x => x.FloorNo).ToList();
+
+                            floorSchedule = objJSS.Serialize(FloorInformationList);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+            }
+            return this.Json(new { obj = objShiftRecord, floorSchedule = floorSchedule, LocationSetting = BaseRepository.GetLocationSetting }, JsonRequestBehavior.AllowGet);
+        }
+        public ActionResult List()
+        {
+            try
+            {
+                ViewBag.RouteType = "";
+                GetAllLov();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return View();
+        }
+
+
+        public ActionResult ProceedDental(string Id, string ShortName)
+        {
+            PatientOrder obj = null;
+            PatientAccount patientAccount = new PatientAccount();
+            obj = new PatientOrderRepository().GetById(Id, false);
+            if (obj.PatientOrderSetId != null)
+            {
+                obj.PatientOrderSet = new PatientOrderSetRepository().GetById(obj.PatientOrderSetId, false);
+                obj.PatientOrderSet.PatientOrderSetId = 0;
+                var billCategoryId = new ProfileRepository().GetByPrefix("REGPAT", false).ProfileId;
+                obj.PatientOrderSet.BillCategoryProfileId = billCategoryId;
+
+                ////  var PaymentModePrefix = new ProfileRepository().GetById(obj.PatientOrderSet.PaymentMethodProfileId).ProfilePrefix;
+                //if (PaymentModePrefix == ProfilePrefixMode.PATPMD.ToString())
+                //{
+                patientAccount = new PatientRepository().GetPatientAdvanceByPatientNo(obj.PatientId, false);
+                //}
+            }
+            obj.Patient = new PatientRepository().GetById(obj.PatientId, false);
+            obj.ParentPatientOrderId = Convert.ToInt64(Id);
+            obj.PatientOrderOn = DateTime.Now;
+            obj.PatientOrderId = 0;
+            TempData["department"] = ShortName;
+            TempData["Dental"] = obj;
+            TempData["patientAccount"] = patientAccount;
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult ProceedInsurance(string Id, string ShortName)
+        {
+            PatientOrder obj = null;
+            PatientAccount patientAccount = new PatientAccount();
+            obj = new PatientOrderRepository().GetById(Id, false);
+            if (obj.PatientOrderSetId != null)
+            {
+                obj.PatientOrderSet = new PatientOrderSetRepository().GetById(obj.PatientOrderSetId, false);
+                obj.PatientOrderSet.PatientOrderSetId = 0;
+
+                var PaymentModePrefix = new ProfileRepository().GetById(obj.PatientOrderSet.PaymentMethodProfileId).ProfilePrefix;
+                if (PaymentModePrefix == ProfilePrefixMode.PATPMD.ToString())
+                {
+                    patientAccount = new PatientRepository().GetPatientAdvanceByPatientNo(obj.PatientId, false);
+                }
+            }
+            obj.Patient = new PatientRepository().GetById(obj.PatientId, false);
+            obj.ParentPatientOrderId = Convert.ToInt64(Id);
+            obj.PatientOrderOn = DateTime.Now;
+            obj.PatientOrderId = 0;
+            TempData["department"] = ShortName;
+            TempData["ApprovedInsuranceProcedure"] = obj;
+            TempData["patientAccount"] = patientAccount;
+            return RedirectToAction("InsuranceIndex");
+        }
+        public string GetDentalData(string Id, string shortName)
+        {
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+            List<Dictionary<string, string>> lstDic = new List<Dictionary<string, string>>();
+            try
+            {
+
+                int? departmentGroupId = null;
+                var obj = new PatientOrderRepository().GetById(Id, false);
+                obj.PatientOrderSet = new PatientOrderSetRepository().GetById(obj.PatientOrderSetId, false);
+                if (obj.PatientOrderSet != null && obj.PatientOrderSet.DepartmentComponentId != null)
+                {
+                    var objDepartmentComponent = new DepartmentComponentRepository().GetById(obj.PatientOrderSet.DepartmentComponentId, false);
+                    departmentGroupId = objDepartmentComponent.DepartmentGroupId;
+                }
+
+                List<ParameterList> lpm = new List<ParameterList>();
+                lpm.Add(new ParameterList("PatientOrderId", Id));
+                if (!string.IsNullOrEmpty(shortName))
+                    lpm.Add(new ParameterList("DepartmentShortName", shortName));
+                if (departmentGroupId != null)
+                    lpm.Add(new ParameterList("DepartmentGroupId", departmentGroupId));
+                DataTable dt = CommonRepository.GetDataTable("GetForDental", "[hms].[procGetPatientOrderForProcedure]", lpm);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+
+                        Dictionary<string, string> dic = new Dictionary<string, string>();
+                        for (int j = 0; j < dt.Columns.Count; j++)
+                        {
+                            dic.Add(dt.Columns[j].ColumnName, dt.Rows[i][j].ToString());
+                        }
+                        lstDic.Add(dic);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            return objJSS.Serialize(lstDic);
+        }
+
+        public string GetInsuranceDentalData(string Id, string shortName)
+        {
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+            List<Dictionary<string, string>> lstDic = new List<Dictionary<string, string>>();
+            try
+            {
+
+                int? departmentGroupId = null;
+                var obj = new PatientOrderRepository().GetById(Id, false);
+                obj.PatientOrderSet = new PatientOrderSetRepository().GetById(obj.PatientOrderSetId, false);
+                if (obj.PatientOrderSet != null && obj.PatientOrderSet.DepartmentComponentId != null)
+                {
+                    var objDepartmentComponent = new DepartmentComponentRepository().GetById(obj.PatientOrderSet.DepartmentComponentId, false);
+                    departmentGroupId = objDepartmentComponent.DepartmentGroupId;
+                }
+
+                List<ParameterList> lpm = new List<ParameterList>();
+                lpm.Add(new ParameterList("PatientOrderId", Id));
+                if (!string.IsNullOrEmpty(shortName))
+                    lpm.Add(new ParameterList("DepartmentShortName", shortName));
+                if (departmentGroupId != null)
+                    lpm.Add(new ParameterList("DepartmentGroupId", departmentGroupId));
+                DataTable dt = CommonRepository.GetDataTable("GetInsuranceDentalData", "[hms].[procGetPatientOrderForProcedure]", lpm);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+
+                        Dictionary<string, string> dic = new Dictionary<string, string>();
+                        for (int j = 0; j < dt.Columns.Count; j++)
+                        {
+                            dic.Add(dt.Columns[j].ColumnName, dt.Rows[i][j].ToString());
+                        }
+                        lstDic.Add(dic);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            return objJSS.Serialize(lstDic);
+        }
+
+
+
+        public ActionResult GetInsuranceApprovelData(string Id, string shortName)
+        {
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+                lpm.Add(new ParameterList("PatientOrderId", Id));
+
+                //PatientInsuranceStatus insuranceStatus = new PatientInsuranceStatusRepository().GetByPatientOrderId(Id, "Procedure", false);
+                PatientInsuranceStatus insuranceStatus = new PatientInsuranceStatusRepository().GetByPatientOrderId(Id, "AllFile", false);
+                insuranceStatus.Profile = new ProfileRepository().GetById(insuranceStatus.InsuranceStatusProfileId, false);
+                return Json(new { insuranceStatus }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+        private void GetAllLov()
+        {
+
+            ViewBag.ddl_Location = new LocationRepository().GetAllForUserDataLocation(false);
+            if (ViewBag.ddl_Location == null)
+            {
+                ViewBag.ddl_Location = new SelectListItem();
+            }
+        }
+
+
+        public bool IsEditEnable(string rolePrefix)
+        {
+            try
+            {
+                if (rolePrefix == "ADM")
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        public string GetAllClinicPatientOrder(string department, string category, string orderNo, string MobileNo, string QID, string MRN,string VisitNo, string fromDate, string toDate, string cbDate)
+        {
+            var listFinal = new List<object>();
+            var lstPatientInvoices = (object)null;
+            var orderQueueList = (object)null;
+
+
+
+            var objJSS = new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue };
+
+            try
+            {
+                List<ParameterList> lpm = new List<ParameterList>();
+
+                var id = new DocMovementRepository().GetByShortName("CLNPAP", false).DocMovementId;
+                lpm.Add(new ParameterList("DocMovementId", id));
+                if (department != "")
+                    lpm.Add(new ParameterList("DepartmentShortName", department));
+
+                lpm.Add(new ParameterList("LocationId", BaseRepository.GetLoginLocationId()));
+                if (category != "$")
+                {
+                    lpm.Add(new ParameterList("PatientCategoryProfileId", long.Parse(category)));
+                }
+                if (orderNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientOrderNo", orderNo));
+                }
+                if (MobileNo != "")
+                {
+                    lpm.Add(new ParameterList("MobileNo", MobileNo));
+                }
+                if (QID != "")
+                {
+                    lpm.Add(new ParameterList("CNIC", QID));
+                }
+                if (MRN != "")
+                {
+                    lpm.Add(new ParameterList("PatientNo", MRN));
+                } 
+                if (VisitNo != "")
+                {
+                    lpm.Add(new ParameterList("PatientOrderNo", VisitNo));
+                }
+                if (Convert.ToBoolean(cbDate))
+                {
+                    DateTime toDateTime = Convert.ToDateTime(toDate);
+                    DateTime fromDateTime = Convert.ToDateTime(fromDate);
+                    lpm.Add(new ParameterList("ToDate", toDateTime));
+                    lpm.Add(new ParameterList("FromDate", fromDateTime));
+                }
+
+                DataTable dtQueue = null;
+                DataTable dtPatientInvoice = null;
+
+                dtQueue = CommonRepository.GetDataTable("OPDPatientPrescribeFORProcedures", "[hms].[procGetPatientOrderForLIMS]", lpm);
+                lpm.RemoveAll(p => p.ParameterName == "DocMovementId");
+                id = new DocMovementRepository().GetByShortName("PROPOD", false).DocMovementId;
+                lpm.Add(new ParameterList("DocMovementId", id));
+                dtPatientInvoice = CommonRepository.GetDataTable("LISTForProcedureInovice", "[hms].[procGetPatientOrder]", lpm);
+
+                string rolePrefix = "";
+                if (BaseRepository.CheckLoginUser != null && BaseRepository.CheckLoginUser.Role != null)
+                    rolePrefix = BaseRepository.CheckLoginUser.Role.RolePrefix;
+
+                if (dtQueue != null)
+                {
+                    orderQueueList = (from item in dtQueue.AsEnumerable()
+                                      select new
+                                      {
+                                          LabOrderId = item.Field<long>("PatientOrderId"),
+                                          PatientOrderNo = item.Field<string>("PatientOrderNo"),
+                                          PatientOrderOn = item.Field<DateTime>("PatientOrderOn").ToString("dd/MM/yyyy"),
+                                          PatientNo = item.Field<string>("PatientNo"),
+                                          PatientId = item.Field<long>("PatientId"),
+                                          PatientName = item.Field<string>("PatientName").ToString(),
+                                          Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                          Mobile = item.Field<string>("Mobile1"),
+                                          TestName = item.Field<string>("Tests"),
+                                          TotalAmount = item.Field<long>("TotalAmount"),
+                                          TotalDiscount = item.Field<decimal?>("TotalDiscount"),
+                                          ComponentName = item.Field<string>("ComponentName"),
+                                          InsuranceCompanyName = item.Field<string>("InsuranceCompanyName"),
+                                          ProcedureName = item.Field<string>("ProcedureName"),
+                                          InsuranceStatus = item.Field<string>("InsuranceStatus"),
+                                          InsuranceStatusFilePath = item.Field<string>("InsuranceStatusFilePath"),
+                                          BillCategoryName = (item.Field<string>("BillCategoryName") == "Insurance" ? item.Field<string>("InsuranceCompanyName") : item.Field<string>("BillCategoryName")),
+                                          Proceed = (item.Field<string>("BillCategoryName") != "Insurance" ? "<a class='ProceedIcon' href='/eClinic/ProcedureInvoice/ProceedDental?Id=" + item.Field<long>("PatientOrderId") + "&&ShortName=" + department + "'></a>" : "<a class='ProceedIcon' href='/eClinic/ProcedureInvoice/ProceedInsurance?Id=" + item.Field<long>("PatientOrderId") + "&&ShortName=" + department + "'></a>"),
+                                      }).ToList();
+                }
+                listFinal.Add(orderQueueList);
+                if (dtPatientInvoice != null)
+                {
+                    lstPatientInvoices = (from item in dtPatientInvoice.AsEnumerable()
+                                          select new
+                                          {
+                                              MRN = item.Field<string>("MRN"),
+                                              PatientName = item.Field<string>("PatientName").ToString(),
+                                              PatientOrderNo = item.Field<string>("PatientOrderNo"),
+                                              InvoiceNo = item.Field<string>("InvoiceNo"),
+                                              Age = (item.Field<DateTime?>("DOB") == null ? "" : item.Field<string>("PatientAge")) + " " + item.Field<string>("ProfileName").ToString(),
+                                              BillCategoryName = (item.Field<string>("BillCategoryName") == "Insurance" ? item.Field<string>("InsuranceCompanyName") : item.Field<string>("BillCategoryName")),
+                                              InsuranceCompanyName = item.Field<string>("InsuranceCompanyName"),
+                                              ProcedureName = item.Field<string>("ProcedureName"),
+                                              ComponentName = item.Field<string>("ComponentName"),
+                                              PatientOrderOn = item.Field<DateTime>("PatientOrderOn").ToString("dd/MM/yyyy"),
+                                              Print = "<a href='#' onclick=PrintPatientSlip('" + item.Field<long>("PatientOrderId") + "');><img src='/Images/Common/Printer.png' style='width:30px;height:30px;' /></a>",
+
+                                              LabOrderId = item.Field<long>("PatientOrderId"),
+                                              Payment = item.Field<decimal?>("TotalReceived") ?? 0,
+                                              PatientId = item.Field<long>("PatientId"),
+                                              Mobile = item.Field<string>("Mobile1"),
+                                              TotalAmount = item.Field<long>("TotalAmount"),
+                                              Edit = IsEditEnable(rolePrefix) == true ? "<a class='EditIcon' href='/eClinic/ProcedureInvoice/Edit/" + item.Field<long>("PatientOrderId") + "'></a>" : "",
+
+                                          }).ToList();
+                }
+
+                listFinal.Add(lstPatientInvoices);
+            }
+            catch (Exception ex)
+            {
+                return ex.ToString();
+            }
+            return objJSS.Serialize(listFinal);
+        }
+
+        public JsonResult GetDiscountVoucher(string voucherNo)
+        {
+            try
+            {
+                var lstDiscountVoucher = (object)null;
+                DataTable dt = new DiscountVoucherRepository().GetByVoucherNo(voucherNo);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    lstDiscountVoucher = (from item in dt.AsEnumerable()
+                                          select new
+                                          {
+                                              DiscountVoucherId = item.Field<long>("DiscountVoucherId"),
+                                              CreatedOn = item.Field<DateTime>("CreatedOn").ToString("dd/MM/yyyy"),
+                                              Amount = item.Field<decimal>("Amount"),
+                                              VoucherNo = item.Field<string>("VoucherNo"),
+                                          }).ToList();
+                }
+                return Json(new { lstDiscountVoucher }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new MessageObject(MessageTypeMode.ERROR, ex.Message), JsonRequestBehavior.AllowGet);
+            }
+
+        }
+    }
+}

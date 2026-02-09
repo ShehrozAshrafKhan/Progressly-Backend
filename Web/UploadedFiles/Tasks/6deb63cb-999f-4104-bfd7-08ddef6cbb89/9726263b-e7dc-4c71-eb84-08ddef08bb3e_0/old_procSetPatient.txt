@@ -1,0 +1,493 @@
+USE [Dr_KaldariSurgiartCentre]
+GO
+/****** Object:  StoredProcedure [hms].[procSetPatient]    Script Date: 9/9/2025 1:16:49 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [hms].[procSetPatient]
+
+	@Activity VARCHAR(50) = NULL,
+	@PatientId BIGINT  = NULL,
+	@PatientTypeProfileId INT = NULL,
+	@BillCategoryProfileId INT = NULL,
+	@RegistrationLocationId BIGINT = NULL,
+	@ControlTypeProfileId BIGINT=NULL,
+	@AddressId BIGINT = NULL,
+	@EmployeeId BIGINT = NULL,
+	@PartyLocationId BIGINT = NULL,
+	@PersonId BIGINT=NULL,
+	@PatientNo NVARCHAR(15) = NULL,
+	@TitleId BIGINT=NULL,
+	@FirstName NVARCHAR(50)=NULL,
+	@MiddleName NVARCHAR(50) = NULL,
+	@LastName NVARCHAR(50) = NULL,
+	@PatientName NVARCHAR(50) = NULL,
+	@SubTitleId BIGINT=NULL,
+	@FatherName NVARCHAR(50) = NULL,
+	@DOB DATE = NULL,
+	@Age BIGINT = NULL,
+	@PatientAge NVARCHAR(50) = NULL,
+	@CNIC NVARCHAR(15)= NULL,
+	@FatherCNIC NVARCHAR(15)= NULL,
+	@PassportNo NVARCHAR(20)= NULL,
+	@MaritalStatusProfileId BIGINT = NULL,
+	@GenderProfileId BIGINT=NULL,
+	@BloodProfileId BIGINT = NULL,
+	@ReligionProfileId BIGINT = NULL,
+	@OccupationProfileId BIGINT = NULL,
+	@EducationProfileId BIGINT = NULL,
+	@GroupNo NVARCHAR(50) =NULL,
+	@PolicyNo NVARCHAR(50) =NULL,
+	@NationalityId BIGINT = NULL,
+	@PatientAddressDetail	nvarchar(MAX)=NULL,
+	@NeedLogin BIT =0,
+	@ReferralTypeProfileId BIGINT = NULL,
+	@PictureFileURL NVARCHAR(150) = NULL,
+	@Mobile1	NVARCHAR(50) = NULL,
+    @Mobile2	NVARCHAR(50) = NULL,
+    @Email   	NVARCHAR(50) = NULL,
+	@CreatedById bigint=null,
+	@CreatedOn DATETIME=null,
+	@AlteredById bigint=null,
+	@AlteredOn DATETIME=null,
+	@ActionTypeId TINYINT=null,
+	@UserLogId	bigint = NULL,
+	@IsFinancialAssistanceRequired BIT = 0,
+	@IsVIPPatient BIT = 0,
+	@InsuranceCardFileUrl NVARCHAR(150) =NULL,
+	@QatarIdFileUrl NVARCHAR(150) =NULL,
+	@InsuranceId NVARCHAR(30) =NULL,
+	@InsurancePartyLocationId BIGINT = NULL,
+	@InsurancePackageId BIGINT = NULL,
+	@IsConfidential BIT = 0,
+	
+	
+	@MemberShipNo NVARCHAR(50)=NULL,
+	@MemberExpiryDate DATETIME=NULL,
+	@InsurancePolicyNo NVARCHAR(50)=NULL,
+	@PolicyExpiryDate DATETIME = NULL,
+	@Deductible DECIMAL(18,2) = NULL,
+	@CoInsurance DECIMAL(18,2) = NULL,
+	@InsuranceEligibilityProfileId nvarchar(MAX)=NULL,
+	@MiddleName2   nvarchar(50)  = NULL,
+	@MiddleName3   nvarchar(50)  = NULL,
+	@VisaNo NVARCHAR(50)=NULL
+AS
+
+BEGIN
+
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+
+	DECLARE @getID BIGINT = 0
+
+	--IF  @ActionTypeId = 3
+	--	BEGIN
+	--		select TOP 1 @getID=LabOrderId
+	--		from dim.LabOrder
+	--		where ActionTypeId<>3 
+	--		and PatientId=@PatientId
+	--		IF @getID > 0 
+	--			Begin
+	--				RAISERROR('Patient Not Delete because order is in Process',16,10)
+	--				RETURN
+	--			END
+
+	--	END
+
+    -------CHECKING ------
+	DECLARE @GetPatientTypeProfileId INT
+	SELECT   @GetPatientTypeProfileId=ProfileId  FROM gen.Profile  WHERE ProfilePrefix ='PETPAT' 
+	select @getID=patientId from hms.patient WHERE RegistrationLocationId=33 
+		AND @PatientTypeProfileId = @GetPatientTypeProfileId
+		AND (@PatientId =0 OR PatientId=@PatientId)
+	IF @getID > 0 
+		Begin
+			RAISERROR('Problem in wrong Patient Type, Contact to Software Administrator',16,10)
+			RETURN
+		END
+
+    -------END------
+
+
+	IF @Activity  = 'SendAllSMS'
+		BEGIN
+			DECLARE @Mobile VARCHAR(50)=NULL;
+			SELECT @Mobile= Mobile1 FROM hms.Patient WHERE ActionTypeId<>3 AND PatientId=@PatientId
+			IF  ISNULL(@Mobile,'') <>''
+				BEGIN
+
+						DECLARE @getDate DATETIME = GETDATE();
+						DECLARE @getOrginizationId BIGINT=NULL;
+						DECLARE @TemplateTypeProfileId INT =NULL;
+						DECLARE @getSMSText NVARCHAR(MAX) =NULL;
+						DECLARE @getShortName NVARCHAR(20)=NULL;
+
+						SELECT @TemplateTypeProfileId=SMSTemplate.TemplateTypeProfileId ,@getShortName=ProfilePrefix
+							   FROM gen.SMSTemplate 
+									INNER JOIN gen.Profile ON Profile.ProfileId = SMSTemplate.TemplateTypeProfileId
+							   WHERE SMSTemplateId=@GroupNo
+						
+						SELECT @getOrginizationId=OrginizationId FROM gen.Location WHERE ActionTypeId<>3 AND LocationId=@RegistrationLocationId
+						SELECT @getSMSText=gen.fnGetSMSText(@TemplateTypeProfileId,@getShortName,@PatientId);
+						IF @getSMSText IS NULL 
+							BEGIN
+								 RAISERROR('SMS Template not found.',18,2);
+								 RETURN;
+							END
+
+						SET @Mobile = REPLACE(@Mobile,'-','')
+						SET @Mobile = '92' + (CASE WHEN LEFT(@Mobile,1)=0 THEN RIGHT(@Mobile,LEN(@Mobile)-1) ELSE @Mobile END)
+
+						EXEC gen.procSetSmsSendingQueue
+						@DocMovementId = NULL,
+						@TemplateTypeProfileId = @TemplateTypeProfileId,
+						@DocRefNo = @PatientId,
+						@OrginizationId=@getOrginizationId,
+						@RequestOn = @getDate,
+						@SendingNos = @Mobile,
+						@Message = @getSMSText,
+						@SendOn = @getDate,
+						@IsProceed=0,
+						@CreatedById=null,
+						@CreatedOn=@getDate,
+						@AlteredById=null,
+						@AlteredOn=@getDate,
+						@ActionTypeId=1,
+						@UserLogId=@UserLogId
+				END
+			-------------------------------------
+
+	END
+	
+
+
+
+	ELSE IF @ActionTypeId = 1 -- For New Record
+
+		BEGIN
+			EXEC hms.procSysGenerateIdentityForHMS
+			@TableName = 'Patient',
+			@DocumentDate = NULL,
+			@LocationId =@RegistrationLocationId,
+			@DocMovementId =NULL,
+			@GetIdentity = @PatientId output
+		
+		SELECT @getID=DocMovementId from gen.DocMovement where ShortName='RGSPAT'
+	
+		SET @PatientNo= gen.fnDocumentFormatNumber(@getID,@RegistrationLocationId,'Patient',NULL,NULL)
+		IF @PatientNo  is null OR @PatientNo =''
+				Begin
+					RAISERROR('Patient No not generated .. Configure it on Location Document Configuration',16,10)
+					RETURN
+				END
+
+			INSERT INTO [hms].[Patient]
+				   (
+					 PatientId,
+					 PatientTypeProfileId,
+					 BillCategoryProfileId,
+					 RegistrationLocationId,
+					 ControlTypeProfileId,
+			--		 AddressId,
+					 EmployeeId,
+					 PersonId,
+					 PartyLocationId,
+					 PatientNo,
+					 TitleId,
+					 FirstName,
+					 MiddleName,
+					 LastName,
+					 SubTitleId,
+					 FatherName,
+					 DOB,
+					 CNIC,
+					 PassportNo,
+					 MaritalStatusProfileId,
+					 GenderProfileId,
+					 BloodProfileId,
+					 ReligionProfileId,
+					 ReferralTypeProfileId,
+					 NationalityId,
+					 OccupationProfileId,
+					 EducationProfileId,
+					 PictureFileURL,
+					 Mobile1,
+					 Mobile2,
+					 Email,
+					 GroupNo,
+					 PolicyNo,
+					 NeedLogin,
+					 PatientAddressDetail,
+					 CreatedById,
+					 CreatedOn,
+					 AlteredById,
+					 AlteredOn,
+					 ActionTypeId,
+					 UserLogId,
+					 FatherCNIC,
+					 IsFinancialAssistanceRequired,
+					 IsVIPPatient,
+					 InsuranceCardFileUrl,
+					 QatarIdFileUrl,
+					 InsuranceId,
+					 InsurancePartyLocationId,
+					 InsurancePackageId,
+					 IsConfidential,
+					 MemberShipNo,
+					 MemberExpiryDate,
+					 InsurancePolicyNo,
+					 PolicyExpiryDate,
+					 Deductible,
+					 CoInsurance,
+					 InsuranceEligibilityProfileId,
+					 MiddleName2,
+	                 MiddleName3,
+	                 VisaNo
+				   )
+			 VALUES
+				   (
+				   
+				     @PatientId,
+					 @PatientTypeProfileId,
+					 @BillCategoryProfileId,
+					 @RegistrationLocationId,
+					 @ControlTypeProfileId,
+			--		 @AddressId,
+					 @EmployeeId,
+					 @PersonId,
+					 @PartyLocationId,
+					 @PatientNo,
+					 @TitleId,
+					 @FirstName,
+					 @MiddleName,
+					 @LastName,
+					 @SubTitleId,
+					 @FatherName,
+					 @DOB,
+					 @CNIC,
+					 @PassportNo,
+					 @MaritalStatusProfileId,
+					 @GenderProfileId,
+					 @BloodProfileId,
+					 @ReligionProfileId,
+					 @ReferralTypeProfileId,
+					 @NationalityId,
+					 @OccupationProfileId,
+					 @EducationProfileId,
+					 @PictureFileURL,
+					 @Mobile1,
+					 @Mobile2,
+					 @Email,
+					 @GroupNo,
+					 @PolicyNo,
+					 @NeedLogin,
+					 @PatientAddressDetail,
+					 @CreatedById,
+					 GETDATE(),
+					 @AlteredById,
+					 GETDATE(),
+					 @ActionTypeId,
+					 @UserLogId,
+					 @FatherCNIC,
+					 @IsFinancialAssistanceRequired,
+					 @IsVIPPatient,
+					 @InsuranceCardFileUrl,
+					 @QatarIdFileUrl,
+					 @InsuranceId,
+					 @InsurancePartyLocationId,
+					 @InsurancePackageId,
+					 @IsConfidential,
+					 @MemberShipNo,
+					 @MemberExpiryDate,
+					 @InsurancePolicyNo,
+					 @PolicyExpiryDate,
+					 @Deductible,
+					 @CoInsurance,
+					 @InsuranceEligibilityProfileId,
+					 @MiddleName2,
+					 @MiddleName3,
+					 @VisaNo
+
+					)
+
+			SELECT @PatientId
+		END
+
+
+	ELSE IF @ActionTypeId = 0 -- For Custom Update From Patient Order
+		BEGIN
+
+			SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+			UPDATE [hms].[Patient]
+			SET
+					PatientTypeProfileId = @PatientTypeProfileId,
+				    BillCategoryProfileId = @BillCategoryProfileId,
+					PassportNo = @PassportNo,
+				    --RegistrationLocationId = @RegistrationLocationId,
+			--	    AddressId = @AddressId,
+			        --ControlTypeProfileId=@ControlTypeProfileId,
+				    --EmployeeId = @EmployeeId,
+					PartyLocationId =@PartyLocationId ,
+					--PersonId=@PersonId,
+				--    PatientNo = @PatientNo,
+					TitleId=@TitleId,
+				    FirstName = @FirstName,
+				    MiddleName = @MiddleName,
+				    LastName = @LastName,
+					SubTitleId=@SubTitleId,
+				    FatherName = @FatherName,
+				    DOB = @DOB,
+				    CNIC = @CNIC,
+				    --PassportNo = @PassportNo,
+				    --MaritalStatusProfileId = @MaritalStatusProfileId,
+				    GenderProfileId = @GenderProfileId,
+				    --BloodProfileId = @BloodProfileId,
+					--OccupationProfileId = @OccupationProfileId,
+				    --EducationProfileId = @EducationProfileId,
+				    --NationalityId = @NationalityId,
+				    --ReferralTypeProfileId = @ReferralTypeProfileId,
+				    --ReligionProfileId = @ReligionProfileId,
+				   -- PictureFileURL = @PictureFileURL,
+					Mobile1 = @Mobile1,
+					--Mobile2 = @Mobile2,
+					Email  = @Email ,
+					PatientAddressDetail=@PatientAddressDetail,
+					--GroupNo = @GroupNo,
+					--PolicyNo = @PolicyNo,
+					--NeedLogin=@NeedLogin,
+					AlteredById = @AlteredById,
+					AlteredOn = GETDATE(),
+					ActionTypeId = @ActionTypeId,
+					UserLogId = @UserLogId,
+					FatherCNIC=@FatherCNIC,
+					IsFinancialAssistanceRequired=@IsFinancialAssistanceRequired,
+					IsVIPPatient=@IsVIPPatient,
+					IsConfidential=@IsConfidential,
+					--InsuranceCardFileUrl=@InsuranceCardFileUrl,
+					--QatarIdFileUrl=@QatarIdFileUrl,
+					--InsuranceId=@InsuranceId,
+					--InsurancePartyLocationId = @InsurancePartyLocationId,
+					--InsurancePackageId = @InsurancePackageId
+					 MiddleName2=@MiddleName2,
+					 MiddleName3=@MiddleName3,
+					 VisaNo=@VisaNo
+			WHERE PatientId = @PatientId
+
+			SELECT @PatientId
+		END
+	ELSE IF @ActionTypeId = 2 -- For Edit Record
+		BEGIN
+
+			SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+			UPDATE [hms].[Patient]
+			SET
+					PatientTypeProfileId = @PatientTypeProfileId,
+				    BillCategoryProfileId = @BillCategoryProfileId,
+				    --RegistrationLocationId = @RegistrationLocationId,
+			--	    AddressId = @AddressId,
+			        ControlTypeProfileId=@ControlTypeProfileId,
+				    EmployeeId = @EmployeeId,
+					PartyLocationId =@PartyLocationId ,
+					PersonId=@PersonId,
+				--    PatientNo = @PatientNo,
+					TitleId=@TitleId,
+				    FirstName = @FirstName,
+				    MiddleName = @MiddleName,
+				    LastName = @LastName,
+					SubTitleId=@SubTitleId,
+				    FatherName = @FatherName,
+				    DOB = @DOB,
+				    CNIC = @CNIC,
+				    PassportNo = @PassportNo,
+				    MaritalStatusProfileId = @MaritalStatusProfileId,
+				    GenderProfileId = @GenderProfileId,
+				    BloodProfileId = @BloodProfileId,
+					OccupationProfileId = @OccupationProfileId,
+				    EducationProfileId = @EducationProfileId,
+				    NationalityId = @NationalityId,
+				    ReferralTypeProfileId = @ReferralTypeProfileId,
+				    ReligionProfileId = @ReligionProfileId,
+				    PictureFileURL = @PictureFileURL,
+					Mobile1 = @Mobile1,
+					Mobile2 = @Mobile2,
+					Email  = @Email ,
+					GroupNo = @GroupNo,
+					PolicyNo = @PolicyNo,
+					NeedLogin=@NeedLogin,
+					PatientAddressDetail=@PatientAddressDetail,
+					AlteredById = @AlteredById,
+					AlteredOn = GETDATE(),
+					ActionTypeId = @ActionTypeId,
+					UserLogId = @UserLogId,
+					FatherCNIC=@FatherCNIC,
+					IsFinancialAssistanceRequired=@IsFinancialAssistanceRequired,
+					 IsVIPPatient=@IsVIPPatient,
+					InsuranceCardFileUrl=@InsuranceCardFileUrl,
+					QatarIdFileUrl=@QatarIdFileUrl,
+					InsuranceId=@InsuranceId,
+					InsurancePartyLocationId = @InsurancePartyLocationId,
+					InsurancePackageId = @InsurancePackageId,
+					IsConfidential=@IsConfidential,
+					 MemberShipNo=@MemberShipNo,
+					 MemberExpiryDate=@MemberExpiryDate,
+					 InsurancePolicyNo=@InsurancePolicyNo,
+					 PolicyExpiryDate=@PolicyExpiryDate,
+					 Deductible=@Deductible,
+					 CoInsurance=@CoInsurance,
+					 InsuranceEligibilityProfileId = @InsuranceEligibilityProfileId,
+					 MiddleName2=@MiddleName2,
+					 MiddleName3=@MiddleName3,
+					 VisaNo=@VisaNo
+			WHERE PatientId = @PatientId
+			SELECT @PatientId
+		END
+			ELSE IF @ActionTypeId = 10 -- For Order Time Edit Info Record
+		BEGIN
+
+			SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+			UPDATE [hms].[Patient]
+			SET
+					TitleId=@TitleId,
+				    FirstName = @FirstName,
+				    MiddleName = @MiddleName,
+				
+					GenderProfileId = @GenderProfileId,
+					NationalityId = @NationalityId,
+					DOB = @DOB,
+					Email = @Email,
+					CNIC = @CNIC,
+					ActionTypeId = @ActionTypeId
+
+			WHERE PatientId = @PatientId
+			SELECT @PatientId
+		END
+	ELSE IF @ActionTypeId = 3 -- For Delete Record
+		BEGIN
+
+			SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+
+			EXEC hms.procSysValidateDeleteForHMS
+			@TableName='Patient',
+			@CheckIdentity=@PatientId
+
+			UPDATE [hms].[Patient]
+			SET 
+				--ActionTypeId = @ActionTypeId, -- DUE TO PROBLEM OCCOUR IN ENTIRE LIMS FLOW
+				AlteredOn = GETDATE(),
+				AlteredById = @AlteredById,
+				UserLogId = @UserLogId
+			WHERE PatientId = @PatientId
+
+			SELECT @PatientId
+		END
+
+END
+
+
